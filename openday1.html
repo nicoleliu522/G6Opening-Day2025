@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>六年级家长开放日选课程序（云端版）</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-800">
+  <main class="max-w-5xl mx-auto p-6">
+    <header class="mb-6">
+      <h1 class="text-2xl font-bold">六年级家长开放日选课程序（云端版）</h1>
+      <p class="text-sm text-gray-600 mt-1">
+        报名信息实时存储在 Firebase 数据库，每组限额 8 人（六年级1-3班与4-5班共享名额）。
+      </p>
+    </header>
+
+    <form id="signupForm" class="bg-white rounded-lg shadow p-5 space-y-5">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <label>
+          <span class="text-sm font-medium">学生姓名</span>
+          <input id="studentName" required class="mt-1 w-full border rounded p-1 border-gray-300 focus:ring-blue-500 focus:border-blue-500" />
+        </label>
+        <label>
+          <span class="text-sm font-medium">班级</span>
+          <select id="classNumber" required class="mt-1 w-full border rounded p-1">
+            <option value="" disabled selected>选择班级</option>
+            <option value="1">六年级1班</option>
+            <option value="2">六年级2班</option>
+            <option value="3">六年级3班</option>
+            <option value="4">六年级4班</option>
+            <option value="5">六年级5班</option>
+          </select>
+        </label>
+        <fieldset>
+          <legend class="text-sm font-medium">日期</legend>
+          <div class="flex gap-3 mt-1">
+            <label><input type="radio" name="day" value="english" required> 11月11日（英语）</label>
+            <label><input type="radio" name="day" value="math"> 11月14日（数学）</label>
+          </div>
+        </fieldset>
+      </div>
+
+      <fieldset>
+        <legend class="text-sm font-medium mt-3">分层课程（限额 8）</legend>
+        <div id="trackOptions" class="mt-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+          <p class="text-gray-500 text-sm col-span-full">请选择班级与日期以显示课程。</p>
+        </div>
+      </fieldset>
+
+      <label class="flex items-center gap-2 text-sm">
+        <input id="agree" type="checkbox" required class="text-blue-600" />
+        我已确认所选课程与孩子实际分层一致。
+      </label>
+
+      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        提交报名
+      </button>
+    </form>
+
+    <div id="message" class="hidden mt-4 p-4 rounded border text-sm"></div>
+
+    <section id="preview" class="hidden mt-6 bg-white rounded-lg shadow p-5">
+      <h2 class="text-lg font-semibold mb-3">当天课程预览</h2>
+      <div id="previewList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
+    </section>
+  </main>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/11.5.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.5.0/firebase-database-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyALbRZ6P-azQhY55YUbyC-Np6zewqb2WdY",
+      authDomain: "opening-day-a4824.firebaseapp.com",
+      databaseURL: "https://opening-day-a4824-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "opening-day-a4824",
+      storageBucket: "opening-day-a4824.firebasestorage.app",
+      messagingSenderId: "827603104559",
+      appId: "1:827603104559:web:ad7e69bb5a67bf0d1f67da"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const signupsRef = db.ref("signups");
+
+    // 🎓 六年级课程信息
+    const COURSE = {
+      english: {
+        A: [
+          { track: "ESL", teacher: "Ms. Chloe & Mr. Brian" },
+          { track: "R/F.a", teacher: "Mr. Matthew & Ms. Kimberly" },
+          { track: "R/F.b", teacher: "Mr. Henry & Ms. Kimberly" },
+          { track: "H", teacher: "Ms. Arne" },
+        ],
+        B: [
+          { track: "ESL", teacher: "Ms. Chloe & Mr. Brian" },
+          { track: "R/F", teacher: "Mr. Matthew & Ms. Kimberly" },
+          { track: "H", teacher: "Ms. Arne" },
+        ],
+      },
+      math: {
+        A: [
+          { track: "S1", teacher: "涂恋恋" },
+          { track: "S2", teacher: "刘宝" },
+          { track: "H", teacher: "魏文萱" },
+        ],
+        B: [
+          { track: "S", teacher: "涂恋恋" },
+          { track: "H", teacher: "秦蓉蓉" },
+        ],
+      },
+    };
+
+    // 📚 另一节固定课程
+    const FIXED = {
+      english: {
+        "1": { period: "第二节", subject: "中文科学", teacher: "王金莉" },
+        "2": { period: "第二节", subject: "STEM", teacher: "Mr. James" },
+        "3": { period: "第二节", subject: "中文科学", teacher: "杜铁牛" },
+        "4": { period: "第一节", subject: "General Sciences", teacher: "Mr. P" },
+        "5": { period: "第一节", subject: "地理", teacher: "姚瑶" },
+      },
+      math: {
+        "1": { period: "第一节", subject: "语文", teacher: "陈青" },
+        "2": { period: "第一节", subject: "General Sciences", teacher: "Mr. P" },
+        "3": { period: "第一节", subject: "语文", teacher: "师庆庆" },
+        "4": { period: "第二节", subject: "语文", teacher: "师庆庆" },
+        "5": { period: "第二节", subject: "语文", teacher: "顾江溪" },
+      }
+    };
+
+    const form = document.getElementById("signupForm");
+    const optionsEl = document.getElementById("trackOptions");
+    const msgEl = document.getElementById("message");
+    const previewEl = document.getElementById("preview");
+    const previewList = document.getElementById("previewList");
+
+    function getGroup(cn) {
+      const n = Number(cn);
+      if ([1,2,3].includes(n)) return "A";
+      if ([4,5].includes(n)) return "B";
+      return null;
+    }
+
+    let counts = {};
+    signupsRef.on("value", snap => {
+      const data = snap.val() || {};
+      counts = {};
+      Object.values(data).forEach(r => {
+        const g = getGroup(r.classNumber);
+        const key = `${r.day}_${g}_${r.track}`;
+        counts[key] = (counts[key] || 0) + 1;
+      });
+      renderOptions();
+    });
+
+    function remaining(day, group, track) {
+      const key = `${day}_${group}_${track}`;
+      return 8 - (counts[key] || 0);
+    }
+
+    function renderOptions() {
+      const cls = document.getElementById("classNumber").value;
+      const day = form.day?.value;
+      if (!cls || !day) return;
+      const group = getGroup(cls);
+      optionsEl.innerHTML = "";
+      COURSE[day][group].forEach(c => {
+        const remain = remaining(day, group, c.track);
+        const disabled = remain <= 0 ? "disabled" : "";
+        optionsEl.innerHTML += `
+          <label class="flex justify-between items-center px-3 py-2 border rounded ${remain<=0?'opacity-50 bg-gray-100':''}">
+            <div><input type="radio" name="track" value="${c.track}" ${disabled} required> ${c.track}（${c.teacher}）</div>
+            <span class="text-xs ${remain>0?'text-emerald-700':'text-red-600'}">${remain>0?'剩余 '+remain+'/8':'已满'}</span>
+          </label>`;
+      });
+    }
+
+    document.getElementById("classNumber").addEventListener("change", renderOptions);
+    document.querySelectorAll('input[name="day"]').forEach(el => el.addEventListener("change", renderOptions));
+
+    form.addEventListener("submit", e => {
+      e.preventDefault();
+      const name = document.getElementById("studentName").value.trim();
+      const cls = document.getElementById("classNumber").value;
+      const day = form.day.value;
+      const track = form.track.value;
+      const group = getGroup(cls);
+      const remain = remaining(day, group, track);
+
+      if (remain <= 0) return alert("该课程已满，请选择其它。");
+
+      const record = {
+        studentName: name,
+        classNumber: cls,
+        day,
+        track,
+        timestamp: new Date().toISOString()
+      };
+
+      signupsRef.push(record)
+        .then(() => {
+          msgEl.className = "mt-4 p-4 rounded border border-green-300 bg-green-50 text-green-800";
+          msgEl.textContent = "报名成功！";
+          msgEl.classList.remove("hidden");
+          showPreview(cls, day, group, track);
+          form.reset();
+          renderOptions();
+        })
+        .catch(err => {
+          msgEl.className = "mt-4 p-4 rounded border border-red-300 bg-red-50 text-red-800";
+          msgEl.textContent = "提交失败：" + err.message;
+          msgEl.classList.remove("hidden");
+        });
+    });
+
+    function showPreview(cls, day, group, track) {
+      const chosen = COURSE[day][group].find(c => c.track === track);
+      const remain = remaining(day, group, track);
+      const fixed = FIXED[day][cls];
+      previewList.innerHTML = `
+        <div class="border rounded p-3 bg-gray-50">
+          <div class="font-medium">${day==='english'?'第一节':'第二节'} - ${chosen.track}（${chosen.teacher}）</div>
+          <div class="text-sm text-gray-600 mt-1">${remain>0?'剩余 '+remain+'/8':'已满'}</div>
+        </div>
+        <div class="border rounded p-3 bg-white">
+          <div class="font-medium">${fixed.period} - ${fixed.subject}（${fixed.teacher}）</div>
+        </div>`;
+      previewEl.classList.remove("hidden");
+    }
+  </script>
+</body>
+</html>
