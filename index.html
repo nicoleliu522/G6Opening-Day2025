@@ -484,27 +484,39 @@
     form.addEventListener('submit', (e) => {
       e.preventDefault();
       if (!form.reportValidity()) return;
-
+    
       const data = new FormData(form);
-      const studentName = data.get('studentName').toString().trim();
+      const studentNameCn = (data.get('studentNameCn') || '').toString().trim();
+      const studentNameEn = (data.get('studentNameEn') || '').toString().trim();
+      const phone = (data.get('phone') || '').toString().trim();
       const classNumber = Number(data.get('classNumber'));
       const day = data.get('day'); // english / math
-      const group = [1,2,3].includes(classNumber) ? 'A' : 'B';
+      const group = [1, 2, 3].includes(classNumber) ? 'A' : 'B';
       const track = data.get('track');
       const note = (data.get('note') || '').toString().trim();
-
+    
+      if (!studentNameCn || !phone || !classNumber || !day || !track) {
+        alert('请完整填写必填项！');
+        return;
+      }
+    
       // 再次检查容量（避免边界条件）
       if (remainingFor(day, group, track) <= 0) {
         alert('抱歉，该分层班级名额已满，请选择其他分层或更换日期/班级组合。');
         renderTrackOptions();
         return;
       }
-
+    
       const s = getSchedule(day, classNumber, track);
       const record = {
-        id: (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2),
+        id:
+          (window.crypto && crypto.randomUUID)
+            ? crypto.randomUUID()
+            : String(Date.now()) + Math.random().toString(16).slice(2),
         ts: new Date().toISOString(),
-        studentName,
+        studentNameCn,
+        studentNameEn,
+        phone,
         classNumber,
         day,
         dayLabel: DAY_LABEL[day],
@@ -515,14 +527,15 @@
         period2: s.p2,
         note,
       };
-
+    
       const list = loadSignups();
       list.push(record);
       saveSignups(list);
-
-      // 结果展示
+    
+      // 显示结果
       resultContent.innerHTML = `
-        <div><span class="font-medium">学生姓名：</span>${studentName}</div>
+        <div><span class="font-medium">学生姓名：</span>${studentNameCn}${studentNameEn ? ` (${studentNameEn})` : ''}</div>
+        <div><span class="font-medium">联系电话：</span>${phone}</div>
         <div><span class="font-medium">所在班级：</span>六年级${classNumber}班</div>
         <div><span class="font-medium">参加日期：</span>${DAY_LABEL[day]}</div>
         <div><span class="font-medium">分层班级：</span>${track}</div>
@@ -533,11 +546,22 @@
         <div class="text-xs text-gray-600 mt-2">提交时间：${new Date(record.ts).toLocaleString()}</div>
       `;
       resultSection.classList.remove('hidden');
-
-      // 缓存当前表单（便于刷新恢复）
-      try { localStorage.setItem(FORM_CACHE_KEY, JSON.stringify({ studentName, classNumber, day, track, note })); } catch {}
-
-      // 更新分层剩余显示
+    
+      try {
+        localStorage.setItem(
+          FORM_CACHE_KEY,
+          JSON.stringify({
+            studentNameCn,
+            studentNameEn,
+            phone,
+            classNumber,
+            day,
+            track,
+            note,
+          })
+        );
+      } catch {}
+    
       renderTrackOptions();
       renderSchedulePreview();
     });
@@ -745,16 +769,22 @@
     });
     
     /* ---------- 管理员登录按钮 ---------- */
-    const adminBtn=document.createElement("button");
-    adminBtn.textContent="管理员登录";
-    adminBtn.className="absolute top-4 right-4 bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700";
-    document.body.appendChild(adminBtn);
+    const headerEl = document.querySelector("header");
+    const adminBtn = document.createElement("button");
+    adminBtn.textContent = "管理员登录";
+    adminBtn.className =
+      "ml-auto mt-3 md:mt-0 bg-indigo-600 text-white text-sm px-3 py-1.5 rounded hover:bg-indigo-700";
+    // 让 header 内部成为 flex 布局，保证标题和按钮在一行（宽屏），窄屏自动换行
+    headerEl.classList.add("flex", "flex-wrap", "items-center", "gap-2");
     
-    adminBtn.addEventListener("click",()=>{
-      const user=prompt("请输入管理员用户名：");
-      const pass=prompt("请输入管理员密码：");
-      if(user==="admin"&&pass==="123"){ showAdminTable(); }
-      else alert("用户名或密码错误");
+    headerEl.appendChild(adminBtn);
+    
+    adminBtn.addEventListener("click", () => {
+      const user = prompt("请输入管理员用户名：");
+      const pass = prompt("请输入管理员密码：");
+      if (user === "admin" && pass === "123") {
+        showAdminTable();
+      } else alert("用户名或密码错误");
     });
     
     function showAdminTable(){
