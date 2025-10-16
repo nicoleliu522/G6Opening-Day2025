@@ -199,6 +199,10 @@
     </section>
   </main>
 
+    <!-- Firebase SDK 初始化 -->
+  <script src="https://www.gstatic.com/firebasejs/11.5.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.5.0/firebase-database-compat.js"></script>
+
   <script>
     // ========== 视图与链接 ==========
     const params = new URLSearchParams(location.search);
@@ -716,76 +720,70 @@
       if (!statsPanel.classList.contains('hidden')) renderStats();
     });
 
-    <!-- Firebase SDK 初始化 -->
-    <script src="https://www.gstatic.com/firebasejs/11.5.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.5.0/firebase-database-compat.js"></script>
-    
-    <script>
-      /* ---------- Firebase 配置 BEGIN ---------- */
-      const firebaseConfig = {
-        apiKey: "AIzaSyALbRZ6P-azQhY55YUbyC-Np6zewqb2WdY",
-        authDomain: "opening-day-a4824.firebaseapp.com",
-        projectId: "opening-day-a4824",
-        databaseURL: "https://opening-day-a4824-default-rtdb.asia-southeast1.firebasedatabase.app",
-        storageBucket: "opening-day-a4824.firebasestorage.app",
-        messagingSenderId: "827603104559",
-        appId: "1:827603104559:web:ad7e69bb5a67bf0d1f67da",
-        measurementId: "G-NB24HMQVL9"
-      };
-    
-      firebase.initializeApp(firebaseConfig);
-      const db = firebase.database();
-      const signupsRef = db.ref("signups");
-      /* ---------- Firebase 配置 END ---------- */
-    
-      // ✅ 在原有 form.addEventListener('submit', ...) 逻辑之后，监听表单提交完成后上传 Firebase
-      form.addEventListener("submit", (e) => {
-        // 延时 100ms 等本地 localStorage 保存完成（不阻塞）
-        setTimeout(() => {
-          try {
-            const list = loadSignups();
-            if (!list?.length) return;
-            const last = list[list.length - 1];
-            // 避免重复上传：检查是否已包含 firebasePush 变量
-            if (last.firebaseSync) return;
-    
-            const payload = {
-              studentName: last.studentName || "",
-              classNumber: last.classNumber || "",
-              day: last.day || "",
-              group: last.group || "",
-              track: last.track || "",
-              trackTeacher: last.trackTeacher || "",
-              period1: last.period1 || "",
-              period2: last.period2 || "",
-              note: last.note || "",
-              timestamp: last.ts || new Date().toISOString()
-            };
-    
-            signupsRef.push(payload).then(() => {
-              // 标记同步成功
-              last.firebaseSync = true;
-              saveSignups(list);
-              console.log("✅ Firebase 数据已写入：", payload);
-            }).catch(err => {
-              console.error("❌ Firebase 写入失败：", err);
-            });
-          } catch (err) {
-            console.error("Firebase 同步错误：", err);
-          }
-        }, 100);
-      });
-    
-      // ✅ （可选）管理员查看当前数据库全部报名记录
-      if (VIEW === "admin") {
-        window.loadFirebaseSignups = function() {
-          signupsRef.once("value").then(snap => {
-            console.log("📁 当前 Firebase 报名数据：", snap.val());
-            alert("已在控制台打印报名数据，请打开 F12 → Console 查看。");
+    /* ---------- Firebase 配置 BEGIN ---------- */
+    const firebaseConfig = {
+      apiKey: "AIzaSyALbRZ6P-azQhY55YUbyC-Np6zewqb2WdY",
+      authDomain: "opening-day-a4824.firebaseapp.com",
+      projectId: "opening-day-a4824",
+      databaseURL: "https://opening-day-a4824-default-rtdb.asia-southeast1.firebasedatabase.app",
+      storageBucket: "opening-day-a4824.firebasestorage.app",
+      messagingSenderId: "827603104559",
+      appId: "1:827603104559:web:ad7e69bb5a67bf0d1f67da",
+      measurementId: "G-NB24HMQVL9"
+    };
+  
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const signupsRef = db.ref("signups");
+    /* ---------- Firebase 配置 END ---------- */
+  
+    // ✅ 在原有 form.addEventListener('submit', ...) 逻辑之后，监听表单提交完成后上传 Firebase
+    form.addEventListener("submit", (e) => {
+      // 延时 100ms 等本地 localStorage 保存完成（不阻塞）
+      setTimeout(() => {
+        try {
+          const list = loadSignups();
+          if (!list?.length) return;
+          const last = list[list.length - 1];
+          // 避免重复上传：检查是否已包含 firebasePush 变量
+          if (last.firebaseSync) return;
+  
+          const payload = {
+            studentName: last.studentName || "",
+            classNumber: last.classNumber || "",
+            day: last.day || "",
+            group: last.group || "",
+            track: last.track || "",
+            trackTeacher: last.trackTeacher || "",
+            period1: last.period1 || "",
+            period2: last.period2 || "",
+            note: last.note || "",
+            timestamp: last.ts || new Date().toISOString()
+          };
+  
+          signupsRef.push(payload).then(() => {
+            // 标记同步成功
+            last.firebaseSync = true;
+            saveSignups(list);
+            console.log("✅ Firebase 数据已写入：", payload);
+          }).catch(err => {
+            console.error("❌ Firebase 写入失败：", err);
           });
-        };
-      }
-    </script>
+        } catch (err) {
+          console.error("Firebase 同步错误：", err);
+        }
+      }, 100);
+    });
+  
+    // ✅ （可选）管理员查看当前数据库全部报名记录
+    if (VIEW === "admin") {
+      window.loadFirebaseSignups = function() {
+        signupsRef.once("value").then(snap => {
+          console.log("📁 当前 Firebase 报名数据：", snap.val());
+          alert("已在控制台打印报名数据，请打开 F12 → Console 查看。");
+        });
+      };
+    }
   </script>
 </body>
 </html>
