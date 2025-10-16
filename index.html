@@ -838,6 +838,13 @@
     });
     
     function showAdminTable() {
+      // 动态加载 SheetJS 库（仅在首次使用时加载）
+      if (!window.XLSX) {
+        const script = document.createElement("script");
+        script.src = "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";
+        document.head.appendChild(script);
+      }
+    
       signupsRef.once("value").then(snap => {
         const data = snap.val();
         if (!data) {
@@ -852,27 +859,33 @@
         const box = document.createElement("div");
         box.className = "bg-white rounded p-4 shadow-lg max-h-[85vh] overflow-auto w-11/12 max-w-6xl";
     
-        // 顶部按钮区
+        // 顶部条
         const topBar = document.createElement("div");
         topBar.className = "mb-3 flex flex-wrap items-center justify-between gap-2";
-        
+    
         const leftTitle = document.createElement("h2");
-        leftTitle.textContent = "报名数据（点击删除后实时更新）";
+        leftTitle.textContent = "报名数据管理";
         leftTitle.className = "text-lg font-semibold";
         topBar.appendChild(leftTitle);
     
+        // 右侧按钮组
         const btnGroup = document.createElement("div");
-        btnGroup.className = "flex gap-2";
+        btnGroup.className = "flex flex-wrap gap-2";
+    
+        const exportBtn = document.createElement("button");
+        exportBtn.textContent = "导出Excel";
+        exportBtn.className = "bg-emerald-600 text-white px-3 py-1 rounded hover:bg-emerald-700";
+    
+        const clearAllBtn = document.createElement("button");
+        clearAllBtn.textContent = "删除全部记录";
+        clearAllBtn.className = "bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700";
     
         const close = document.createElement("button");
         close.textContent = "关闭";
         close.className = "bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600";
         close.onclick = () => wrap.remove();
     
-        const clearAllBtn = document.createElement("button");
-        clearAllBtn.textContent = "删除全部记录";
-        clearAllBtn.className = "bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700";
-    
+        // 一键清空
         clearAllBtn.addEventListener("click", () => {
           if (confirm("⚠️ 确认要删除所有报名记录吗？此操作不可恢复！")) {
             signupsRef
@@ -885,12 +898,42 @@
           }
         });
     
+        // 导出为 Excel 文件
+        exportBtn.addEventListener("click", () => {
+          const workbook = XLSX.utils.book_new();
+          const sheetData = [
+            ["中文名", "英文名", "电话", "班级", "日期", "分组", "分层", "教师", "第一节", "第二节", "备注", "时间"]
+          ];
+    
+          entries.forEach(([_, r]) => {
+            sheetData.push([
+              r.studentNameCn || "",
+              r.studentNameEn || "",
+              r.phone || "",
+              r.classNumber || "",
+              r.date || "",
+              r.group || "",
+              r.track || "",
+              r.trackTeacher || "",
+              r.period1 || "",
+              r.period2 || "",
+              r.note || "",
+              new Date(r.timestamp).toLocaleString()
+            ]);
+          });
+    
+          const worksheet = XLSX.utils.aoa_to_sheet(sheetData);
+          XLSX.utils.book_append_sheet(workbook, worksheet, "报名数据");
+          XLSX.writeFile(workbook, "六年级家长开放日报名.xlsx");
+        });
+    
+        btnGroup.appendChild(exportBtn);
         btnGroup.appendChild(clearAllBtn);
         btnGroup.appendChild(close);
         topBar.appendChild(btnGroup);
         box.appendChild(topBar);
     
-        // 表格主体
+        // 表格内容
         const table = document.createElement("table");
         table.className = "min-w-full border text-sm";
         table.innerHTML = `
@@ -933,14 +976,14 @@
               <button class='delete-btn bg-red-500 text-white px-2 py-0.5 rounded hover:bg-red-600 text-xs'>删除</button>
             </td>`;
     
-          // 单条删除
+          // 单条删除按钮
           const delBtn = tr.querySelector(".delete-btn");
           delBtn.addEventListener("click", () => {
             if (confirm(`确认删除【${r.studentNameCn || ""}】的报名记录吗？`)) {
               signupsRef.child(key).remove()
                 .then(() => {
                   alert("✅ 已删除该条记录。");
-                  tr.remove(); // 从界面移除
+                  tr.remove();
                 })
                 .catch(err => alert("删除失败：" + err));
             }
