@@ -819,48 +819,90 @@
       } else alert("用户名或密码错误");
     });
     
-    function showAdminTable(){
-      signupsRef.once("value").then(snap=>{
-        const data=snap.val();
-        if(!data){ alert("暂无报名记录");return; }
-        const arr=Object.values(data);
-        const wrap=document.createElement("div");
-        wrap.className="fixed inset-0 bg-black/40 flex items-center justify-center z-50";
-        const box=document.createElement("div");
-        box.className="bg-white rounded p-4 shadow-lg max-h-[80vh] overflow-auto w-11/12 max-w-5xl";
-        const close=document.createElement("button");
-        close.textContent="关闭";
-        close.className="mb-3 bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700";
-        close.onclick=()=>wrap.remove();
+    function showAdminTable() {
+      signupsRef.once("value").then(snap => {
+        const data = snap.val();
+        if (!data) {
+          alert("暂无报名记录");
+          return;
+        }
+        const entries = Object.entries(data); // [ [key, value], ... ]
+    
+        const wrap = document.createElement("div");
+        wrap.className = "fixed inset-0 bg-black/40 flex items-center justify-center z-50";
+    
+        const box = document.createElement("div");
+        box.className = "bg-white rounded p-4 shadow-lg max-h-[85vh] overflow-auto w-11/12 max-w-6xl";
+    
+        const close = document.createElement("button");
+        close.textContent = "关闭";
+        close.className = "mb-3 bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700";
+        close.onclick = () => wrap.remove();
         box.appendChild(close);
-        const h=document.createElement("h2");
-        h.textContent="报名数据";
-        h.className="text-lg font-semibold mb-2";
+    
+        const h = document.createElement("h2");
+        h.textContent = "报名数据（点击删除后实时更新）";
+        h.className = "text-lg font-semibold mb-2";
         box.appendChild(h);
-        const table=document.createElement("table");
-        table.className="min-w-full border text-sm";
-        table.innerHTML=`<thead><tr class='bg-gray-100'>
-          <th class='border p-1'>中文名</th><th class='border p-1'>英文名</th>
-          <th class='border p-1'>电话</th><th class='border p-1'>班级</th>
-          <th class='border p-1'>日期</th><th class='border p-1'>分层</th>
-          <th class='border p-1'>教师</th><th class='border p-1'>第一节</th><th class='border p-1'>第二节</th><th class='border p-1'>备注</th><th class='border p-1'>时间</th>
-          </tr></thead><tbody></tbody>`;
-        const tb=table.querySelector("tbody");
-        arr.forEach(r=>{
-          const tr=document.createElement("tr");
-          tr.innerHTML=`<td class='border p-1'>${r.studentNameCn||""}</td>
-            <td class='border p-1'>${r.studentNameEn||""}</td>
-            <td class='border p-1'>${r.phone||""}</td>
-            <td class='border p-1'>${r.classNumber||""}</td>
-            <td class='border p-1'>${r.date||""}</td>
-            <td class='border p-1'>${r.track||""}</td>
-            <td class='border p-1'>${r.trackTeacher||""}</td>
-            <td class='border p-1'>${r.period1||""}</td>
-            <td class='border p-1'>${r.period2||""}</td>
-            <td class='border p-1'>${r.note||""}</td>
-            <td class='border p-1'>${new Date(r.timestamp).toLocaleString()}</td>`;
-          tb.appendChild(tr);
+    
+        const table = document.createElement("table");
+        table.className = "min-w-full border text-sm";
+        table.innerHTML = `
+          <thead>
+            <tr class='bg-gray-100'>
+              <th class='border p-1'>中文名</th>
+              <th class='border p-1'>英文名</th>
+              <th class='border p-1'>电话</th>
+              <th class='border p-1'>班级</th>
+              <th class='border p-1'>日期</th>
+              <th class='border p-1'>分组</th>
+              <th class='border p-1'>分层</th>
+              <th class='border p-1'>教师</th>
+              <th class='border p-1'>第一节</th>
+              <th class='border p-1'>第二节</th>
+              <th class='border p-1'>备注</th>
+              <th class='border p-1'>时间</th>
+              <th class='border p-1 text-center'>操作</th>
+            </tr>
+          </thead>
+          <tbody></tbody>`;
+        const tbody = table.querySelector("tbody");
+    
+        entries.forEach(([key, r]) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td class='border p-1'>${r.studentNameCn || ""}</td>
+            <td class='border p-1'>${r.studentNameEn || ""}</td>
+            <td class='border p-1'>${r.phone || ""}</td>
+            <td class='border p-1'>${r.classNumber || ""}</td>
+            <td class='border p-1'>${r.date || ""}</td>
+            <td class='border p-1'>${r.group || ""}</td>
+            <td class='border p-1'>${r.track || ""}</td>
+            <td class='border p-1'>${r.trackTeacher || ""}</td>
+            <td class='border p-1'>${r.period1 || ""}</td>
+            <td class='border p-1'>${r.period2 || ""}</td>
+            <td class='border p-1'>${r.note || ""}</td>
+            <td class='border p-1 whitespace-nowrap'>${new Date(r.timestamp).toLocaleString()}</td>
+            <td class='border p-1 text-center'>
+              <button class='delete-btn bg-red-500 text-white px-2 py-0.5 rounded hover:bg-red-600 text-xs'>删除</button>
+            </td>`;
+    
+          // 添加删除事件
+          const delBtn = tr.querySelector(".delete-btn");
+          delBtn.addEventListener("click", () => {
+            if (confirm(`确认删除【${r.studentNameCn || ""}】的报名记录吗？`)) {
+              signupsRef.child(key).remove()
+                .then(() => {
+                  alert("✅ 已删除该条记录。");
+                  tr.remove(); // 即时从界面移除
+                })
+                .catch(err => alert("删除失败：" + err));
+            }
+          });
+    
+          tbody.appendChild(tr);
         });
+    
         box.appendChild(table);
         wrap.appendChild(box);
         document.body.appendChild(wrap);
