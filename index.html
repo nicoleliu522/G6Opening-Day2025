@@ -17,10 +17,7 @@
     <header class="mb-6">
       <h1 class="text-2xl font-bold">六年级家长开放日选课程序</h1>
       <p class="text-sm text-gray-600 mt-1">
-        - 家长仅可选择其中一天参加；报名时需选择孩子的分层班级。<br />
-        - 每个英语/数学分层班级限额 8 位家长，报满后将无法选择。<br />
-        - 分层班级已匹配任课老师；导出含教师、课节信息。<br />
-        - 支持“家长视图”和“管理员视图”，并可生成中国大陆 HTTP 分享链接。
+        - 家长仅可选择其中一天参加；报名时需选择孩子的分层班级；报名只可提交一次。
       </p>
     </header>
 
@@ -51,58 +48,23 @@
       </div>
     </section>
 
-    <section class="bg-white rounded-lg shadow p-5 mb-6">
-      <h2 class="text-lg font-semibold mb-3">活动安排与分层</h2>
-      <div class="grid md:grid-cols-2 gap-6 text-sm">
-        <div>
-          <div class="font-medium">11月11日（上午）英语</div>
-          <ul class="list-disc ml-5 mt-1 space-y-1">
-            <li>六年级1、2、3班混班：分层4个班级（ESL，R/F.a，R/F.b，H）</li>
-            <li>六年级4、5班混班：分层3个班级（ESL，R/F，H）</li>
-          </ul>
-          <div class="mt-2 text-gray-700">
-            课节安排：<br />
-            - 1/2/3班：第一节 英语（分层），第二节 按本班安排（见下）<br />
-            - 4/5班：第一节 按本班安排（见下），第二节 英语（分层）
-          </div>
-          <ul class="list-disc ml-5 mt-1 space-y-1">
-            <li>1班 第二节：中文科学（王金莉）</li>
-            <li>2班 第二节：STEM（Mr. James）</li>
-            <li>3班 第二节：中文科学（杜铁牛）</li>
-            <li>4班 第一节：General Sciences（Mr. P）</li>
-            <li>5班 第一节：地理（姚瑶）</li>
-          </ul>
-        </div>
-        <div>
-          <div class="font-medium">11月14日（上午）数学</div>
-          <ul class="list-disc ml-5 mt-1 space-y-1">
-            <li>六年级1、2、3班混班：分层3个班级（S1，S2，H）</li>
-            <li>六年级4、5班：分层2个班级（S，H）</li>
-          </ul>
-          <div class="mt-2 text-gray-700">
-            课节安排：<br />
-            - 1/2/3班：第一节 按本班安排（见下），第二节 数学（分层）<br />
-            - 4/5班：第一节 数学（分层），第二节 按本班安排（见下）
-          </div>
-          <ul class="list-disc ml-5 mt-1 space-y-1">
-            <li>1班 第一节：语文（陈青）</li>
-            <li>2班 第一节：General Sciences（Mr. P）</li>
-            <li>3班 第一节：语文（师庆庆）</li>
-            <li>4班 第二节：语文（师庆庆）</li>
-            <li>5班 第二节：语文（顾江溪）</li>
-          </ul>
-        </div>
-      </div>
-    </section>
-
     <form id="signupForm" class="bg-white rounded-lg shadow p-5 space-y-5">
       <h2 class="text-lg font-semibold">报名信息</h2>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <label class="block md:col-span-1">
-          <span class="block text-sm font-medium text-gray-700">学生姓名</span>
-          <input type="text" name="studentName" required
-                 class="mt-1 w-full rounded border-gray-300 focus:border-blue-500 focus:ring-blue-500" placeholder="请输入学生姓名" />
+          <span class="block text-sm font-medium text-gray-700">学生中文名（必填）</span>
+          <input type="text" name="studentNameCn" required class="mt-1 w-full rounded border-gray-300 focus:ring-blue-500" placeholder="请输入中文名" />
+        </label>
+      
+        <label class="block md:col-span-1">
+          <span class="block text-sm font-medium text-gray-700">学生英文名（可选）</span>
+          <input type="text" name="studentNameEn" class="mt-1 w-full rounded border-gray-300 focus:ring-blue-500" placeholder="请输入英文名" />
+        </label>
+      
+        <label class="block md:col-span-1">
+          <span class="block text-sm font-medium text-gray-700">家长联系电话</span>
+          <input type="tel" name="phone" required class="mt-1 w-full rounded border-gray-300 focus:ring-blue-500" placeholder="请输入手机号" />
         </label>
 
         <label class="block md:col-span-1">
@@ -724,8 +686,8 @@
     const firebaseConfig = {
       apiKey: "AIzaSyALbRZ6P-azQhY55YUbyC-Np6zewqb2WdY",
       authDomain: "opening-day-a4824.firebaseapp.com",
-      projectId: "opening-day-a4824",
       databaseURL: "https://opening-day-a4824-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "opening-day-a4824",
       storageBucket: "opening-day-a4824.firebasestorage.app",
       messagingSenderId: "827603104559",
       appId: "1:827603104559:web:ad7e69bb5a67bf0d1f67da"
@@ -733,36 +695,33 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const signupsRef = db.ref("signups");
-    /* ---------- Firebase 配置 END ---------- */
     
-    // ✅ day对应日期映射
-    function convertDayToDate(dayKey){
-      if(dayKey === "english") return "2025-11-11";
-      if(dayKey === "math") return "2025-11-14";
-      return "";
+    function dayToDate(day){
+      return day==="english" ? "2025-11-11" : day==="math" ? "2025-11-14" : "";
     }
     
-    /* ========= 提交后写入 Firebase + 防重复报名检测 ========== */
-    form.addEventListener("submit", (e) => {
-      setTimeout(() => {
-        try {
+    /* ---------- 提交表单写入 Firebase 前防重复 ---------- */
+    form.addEventListener("submit", (e)=>{
+      setTimeout(()=>{
+        try{
           const list = loadSignups();
-          if (!list?.length) return;
-          const last = list[list.length - 1];
-          if (last.firebaseSync) return;
+          if(!list?.length) return;
+          const last = list.at(-1);
+          if(last.firebaseSync) return;
     
-          const name = last.studentName.trim();
+          const cnName = last.studentNameCn?.trim();
+          if(!cnName) return;
     
-          // 检查学生是否已报名
-          signupsRef.orderByChild("studentName").equalTo(name).once("value", (snapshot) => {
-            if (snapshot.exists()) {
-              alert("⚠️ 该学生已提交过报名记录，每位学生仅可报名一次。");
-              console.warn("该学生已报名：", name);
+          // 检查重复（中文名相同视为重复）
+          signupsRef.orderByChild("studentNameCn").equalTo(cnName).once("value", snap=>{
+            if(snap.exists()){
+              alert("⚠️ 此学生已报名过，不能重复提交。");
               return;
             }
-    
             const payload = {
-              studentName: last.studentName || "",
+              studentNameCn: last.studentNameCn || "",
+              studentNameEn: last.studentNameEn || "",
+              phone: last.phone || "",
               classNumber: last.classNumber || "",
               group: last.group || "",
               track: last.track || "",
@@ -770,114 +729,79 @@
               period1: last.period1 || "",
               period2: last.period2 || "",
               note: last.note || "",
-              date: convertDayToDate(last.day),
-              timestamp: last.ts || new Date().toISOString(),
+              date: dayToDate(last.day),
+              timestamp: last.ts || new Date().toISOString()
             };
-    
-            signupsRef.push(payload)
-            .then(() => {
-              console.log("✅ 已写入Firebase：", payload);
-              last.firebaseSync = true;
+            signupsRef.push(payload).then(()=>{
+              last.firebaseSync=true;
               saveSignups(list);
-            })
-            .catch(err => {
-              console.error("❌ Firebase 写入失败", err);
-            });
+              console.log("✅ 已写入 Firebase",payload);
+            }).catch(err=>console.error(err));
           });
-        } catch (err) {
-          console.error("Firebase 同步错误：", err);
+        }catch(err){
+          console.error("Firebase 同步错误",err);
         }
-      }, 100);
+      },100);
     });
     
+    /* ---------- 管理员登录按钮 ---------- */
+    const adminBtn=document.createElement("button");
+    adminBtn.textContent="管理员登录";
+    adminBtn.className="absolute top-4 right-4 bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700";
+    document.body.appendChild(adminBtn);
     
-    /* ========= 管理员登录与数据查看 ========== */
-    
-    // 动态插入“管理员登录”按钮
-    const adminLoginBtn = document.createElement("button");
-    adminLoginBtn.textContent = "管理员登录";
-    adminLoginBtn.className = "fixed bottom-4 right-4 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700";
-    document.body.appendChild(adminLoginBtn);
-    
-    adminLoginBtn.addEventListener("click", ()=> {
-      const user = prompt("请输入管理员用户名：");
-      const pass = prompt("请输入管理员密码：");
-      if(user === "admin" && pass === "123"){
-        showAdminTable();
-      } else {
-        alert("用户名或密码错误。");
-      }
+    adminBtn.addEventListener("click",()=>{
+      const user=prompt("请输入管理员用户名：");
+      const pass=prompt("请输入管理员密码：");
+      if(user==="admin"&&pass==="123"){ showAdminTable(); }
+      else alert("用户名或密码错误");
     });
     
     function showAdminTable(){
-      signupsRef.once("value").then(snapshot=>{
-        const data = snapshot.val();
-        if(!data){
-          alert("暂无报名记录");
-          return;
-        }
-    
-        const entries = Object.values(data);
-        const tableWrap = document.createElement("div");
-        tableWrap.className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50";
-    
-        const modal = document.createElement("div");
-        modal.className="bg-white rounded-lg p-5 max-h-[80vh] overflow-auto w-full max-w-5xl shadow-lg";
-    
-        const closeBtn=document.createElement("button");
-        closeBtn.textContent="关闭";
-        closeBtn.className="mb-3 bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700";
-        closeBtn.addEventListener("click",()=>tableWrap.remove());
-        modal.appendChild(closeBtn);
-    
+      signupsRef.once("value").then(snap=>{
+        const data=snap.val();
+        if(!data){ alert("暂无报名记录");return; }
+        const arr=Object.values(data);
+        const wrap=document.createElement("div");
+        wrap.className="fixed inset-0 bg-black/40 flex items-center justify-center z-50";
+        const box=document.createElement("div");
+        box.className="bg-white rounded p-4 shadow-lg max-h-[80vh] overflow-auto w-11/12 max-w-5xl";
+        const close=document.createElement("button");
+        close.textContent="关闭";
+        close.className="mb-3 bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700";
+        close.onclick=()=>wrap.remove();
+        box.appendChild(close);
         const h=document.createElement("h2");
-        h.textContent="所有报名信息";
-        h.className="text-xl font-semibold mb-3";
-        modal.appendChild(h);
-    
+        h.textContent="报名数据";
+        h.className="text-lg font-semibold mb-2";
+        box.appendChild(h);
         const table=document.createElement("table");
-        table.className="min-w-full border border-gray-300 text-sm";
-        table.innerHTML=`
-          <thead class="bg-gray-100">
-            <tr>
-              <th class="border p-2">学生姓名</th>
-              <th class="border p-2">班级</th>
-              <th class="border p-2">日期</th>
-              <th class="border p-2">分组</th>
-              <th class="border p-2">分层班级</th>
-              <th class="border p-2">任教老师</th>
-              <th class="border p-2">第一节课</th>
-              <th class="border p-2">第二节课</th>
-              <th class="border p-2">备注</th>
-              <th class="border p-2">提交时间</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        `;
-    
-        const tbody=table.querySelector("tbody");
-        entries.forEach(r=>{
+        table.className="min-w-full border text-sm";
+        table.innerHTML=`<thead><tr class='bg-gray-100'>
+          <th class='border p-1'>中文名</th><th class='border p-1'>英文名</th>
+          <th class='border p-1'>电话</th><th class='border p-1'>班级</th>
+          <th class='border p-1'>日期</th><th class='border p-1'>分层</th>
+          <th class='border p-1'>教师</th><th class='border p-1'>第一节</th><th class='border p-1'>第二节</th><th class='border p-1'>备注</th><th class='border p-1'>时间</th>
+          </tr></thead><tbody></tbody>`;
+        const tb=table.querySelector("tbody");
+        arr.forEach(r=>{
           const tr=document.createElement("tr");
-          tr.innerHTML=`
-            <td class="border px-2 py-1">${r.studentName||""}</td>
-            <td class="border px-2 py-1">${r.classNumber||""}</td>
-            <td class="border px-2 py-1">${r.date||""}</td>
-            <td class="border px-2 py-1">${r.group||""}</td>
-            <td class="border px-2 py-1">${r.track||""}</td>
-            <td class="border px-2 py-1">${r.trackTeacher||""}</td>
-            <td class="border px-2 py-1">${r.period1||""}</td>
-            <td class="border px-2 py-1">${r.period2||""}</td>
-            <td class="border px-2 py-1">${r.note||""}</td>
-            <td class="border px-2 py-1">${r.timestamp?new Date(r.timestamp).toLocaleString():""}</td>
-          `;
-          tbody.appendChild(tr);
+          tr.innerHTML=`<td class='border p-1'>${r.studentNameCn||""}</td>
+            <td class='border p-1'>${r.studentNameEn||""}</td>
+            <td class='border p-1'>${r.phone||""}</td>
+            <td class='border p-1'>${r.classNumber||""}</td>
+            <td class='border p-1'>${r.date||""}</td>
+            <td class='border p-1'>${r.track||""}</td>
+            <td class='border p-1'>${r.trackTeacher||""}</td>
+            <td class='border p-1'>${r.period1||""}</td>
+            <td class='border p-1'>${r.period2||""}</td>
+            <td class='border p-1'>${r.note||""}</td>
+            <td class='border p-1'>${new Date(r.timestamp).toLocaleString()}</td>`;
+          tb.appendChild(tr);
         });
-    
-        modal.appendChild(table);
-        tableWrap.appendChild(modal);
-        document.body.appendChild(tableWrap);
-      }).catch(err=>{
-        alert("读取数据失败：" + err.message);
+        box.appendChild(table);
+        wrap.appendChild(box);
+        document.body.appendChild(wrap);
       });
     }
   </script>
