@@ -5,36 +5,24 @@
   <title>六年级家长开放日选课程序（云端版）</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    body {
-      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-    }
-  </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
   <main class="max-w-4xl mx-auto p-6">
     <header class="mb-6">
       <h1 class="text-2xl font-bold">六年级家长开放日选课程序（云端版）</h1>
-      <p class="text-sm text-gray-600 mt-1">
-        报名信息存储在 Firebase 云数据库中；每个分层限额为 8。
-      </p>
+      <p class="text-sm text-gray-600 mt-1">每个分层限额 8，信息保存于 Firebase。</p>
     </header>
 
-    <form id="signupForm" class="bg-white rounded-lg shadow p-5 space-y-5">
-      <h2 class="text-lg font-semibold">报名信息</h2>
-
+    <form id="signupForm" class="bg-white p-6 rounded-lg shadow space-y-5">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <label class="block md:col-span-1">
-          <span class="block text-sm font-medium text-gray-700">学生姓名</span>
-          <input type="text" id="studentName" required
-                 class="mt-1 w-full rounded border-gray-300 focus:border-blue-500 focus:ring-blue-500" placeholder="请输入学生姓名" />
+        <label>
+          <span class="text-sm font-medium">学生姓名</span>
+          <input id="studentName" required class="mt-1 w-full border rounded p-1 border-gray-300 focus:ring-blue-500 focus:border-blue-500" />
         </label>
-
-        <label class="block md:col-span-1">
-          <span class="block text-sm font-medium text-gray-700">所在班级</span>
-          <select id="classNumber" required
-                  class="mt-1 w-full rounded border-gray-300 focus:border-blue-500 focus:ring-blue-500">
-            <option value="" disabled selected>请选择六年级班级</option>
+        <label>
+          <span class="text-sm font-medium">班级</span>
+          <select id="classNumber" required class="mt-1 w-full border rounded p-1">
+            <option value="" disabled selected>选择班级</option>
             <option value="1">六年级1班</option>
             <option value="2">六年级2班</option>
             <option value="3">六年级3班</option>
@@ -42,47 +30,33 @@
             <option value="5">六年级5班</option>
           </select>
         </label>
-
-        <fieldset class="md:col-span-1">
-          <legend class="block text-sm font-medium text-gray-700">参加日期</legend>
-          <div class="flex items-center gap-4 mt-2">
-            <label class="inline-flex items-center gap-2">
-              <input type="radio" name="day" value="english" class="text-blue-600" required />
-              <span>11月11日（英语）</span>
-            </label>
-            <label class="inline-flex items-center gap-2">
-              <input type="radio" name="day" value="math" class="text-blue-600" />
-              <span>11月14日（数学）</span>
-            </label>
+        <fieldset>
+          <legend class="text-sm font-medium">选择日期</legend>
+          <div class="flex gap-3 mt-1">
+            <label><input type="radio" name="day" value="english" required> 英语 11月11日</label>
+            <label><input type="radio" name="day" value="math"> 数学 11月14日</label>
           </div>
         </fieldset>
       </div>
 
-      <fieldset id="trackFieldset" class="space-y-2">
-        <legend class="text-sm font-medium text-gray-700">分层班级（每班限额 8）</legend>
-        <p id="trackHint" class="text-sm text-gray-500">
-          请选择班级和日期以显示可选分层班级。
-        </p>
-        <div id="trackOptions" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2"></div>
+      <fieldset id="trackFieldset">
+        <legend class="text-sm font-medium mt-3">分层选项（每班限额8）</legend>
+        <div id="trackOptions" class="mt-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+          <p class="text-gray-500 text-sm col-span-full">请选择班级和日期以加载分层。</p>
+        </div>
       </fieldset>
 
-      <div class="flex items-start gap-2">
-        <input id="agree" type="checkbox" required class="mt-1 text-blue-600 focus:ring-blue-500" />
-        <label for="agree" class="text-sm text-gray-700">
-          我已知悉并确认所选分层与孩子实际分层一致。
-        </label>
-      </div>
+      <label class="flex items-center gap-2 text-sm">
+        <input id="agree" type="checkbox" required class="text-blue-600" />
+        我已确认所选分层与孩子实际分层一致。
+      </label>
 
-      <button type="submit"
-              class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700">
+      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
         提交报名
       </button>
     </form>
 
-    <section id="result" class="hidden mt-6 bg-green-50 border border-green-200 text-green-900 rounded-lg p-5">
-      <h3 class="font-semibold mb-2">报名成功</h3>
-      <div id="resultContent" class="text-sm space-y-1"></div>
-    </section>
+    <section id="message" class="hidden mt-4 p-4 rounded border text-sm"></section>
   </main>
 
   <!-- Firebase SDK -->
@@ -93,6 +67,7 @@
     const firebaseConfig = {
       apiKey: "AIzaSyALbRZ6P-azQhY55YUbyC-Np6zewqb2WdY",
       authDomain: "opening-day-a4824.firebaseapp.com",
+      databaseURL: "https://opening-day-a4824-default-rtdb.asia-southeast1.firebasedatabase.app",
       projectId: "opening-day-a4824",
       storageBucket: "opening-day-a4824.firebasestorage.app",
       messagingSenderId: "827603104559",
@@ -102,107 +77,102 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    const refSignups = db.ref("signups");
+    const signupsRef = db.ref("signups");
 
-    const TRACK_MAP = {
-      english: { A: ['ESL','R/F.a','R/F.b','H'], B: ['ESL','R/F','H'] },
-      math: { A: ['S1','S2','H'], B: ['S','H'] },
+    const TRACKS = {
+      english: {A: ["ESL", "R/F.a", "R/F.b", "H"], B: ["ESL", "R/F", "H"]},
+      math: {A: ["S1", "S2", "H"], B: ["S", "H"]}
     };
 
-    const DAY_LABEL = { english: '11月11日（英语）', math: '11月14日（数学）' };
+    const DAY_LABELS = {english: "英语 11月11日", math: "数学 11月14日"};
 
-    function getGroup(classNumber) {
-      const n = Number(classNumber);
+    const form = document.getElementById('signupForm');
+    const trackContainer = document.getElementById('trackOptions');
+    const msgEl = document.getElementById('message');
+
+    let currentCounts = {};
+
+    signupsRef.on("value", snap => {
+      const data = snap.val();
+      currentCounts = {};
+      if (data) {
+        Object.values(data).forEach(r => {
+          const key = `${r.day}_${r.classNumber}_${r.track}`;
+          currentCounts[key] = (currentCounts[key] || 0) + 1;
+        });
+      }
+      renderTracks();
+    });
+
+    function getGroup(cn) {
+      const n = Number(cn);
       if ([1,2,3].includes(n)) return 'A';
       if ([4,5].includes(n)) return 'B';
       return null;
     }
 
-    const form = document.getElementById("signupForm");
-    const classEl = document.getElementById("classNumber");
-    const trackEl = document.getElementById("trackOptions");
-    const hintEl = document.getElementById("trackHint");
-    const resultEl = document.getElementById("result");
-    const resultContent = document.getElementById("resultContent");
-
-    let currentCounts = {};
-
-    // 实时读取报名数据以计算剩余名额
-    refSignups.on("value", snapshot => {
-      const data = snapshot.val() || {};
-      const counts = {};
-      Object.values(data).forEach(r => {
-        const key = `${r.day}_${r.group}_${r.track}`;
-        counts[key] = (counts[key] || 0) + 1;
-      });
-      currentCounts = counts;
-      renderTrackOptions();
-    });
-
-    function remaining(day, group, track) {
-      const key = `${day}_${group}_${track}`;
-      return 8 - (currentCounts[key] || 0);
+    function remaining(day, classNum, track) {
+      return 8 - (currentCounts[`${day}_${classNum}_${track}`] || 0);
     }
 
-    function renderTrackOptions() {
-      const day = form.day.value || null;
-      const group = getGroup(classEl.value);
-      trackEl.innerHTML = "";
-      if (!day || !group) {
-        hintEl.classList.remove("hidden");
+    function renderTracks() {
+      const classNum = document.getElementById('classNumber').value;
+      const day = form.day.value;
+      trackContainer.innerHTML = '';
+      if (!classNum || !day) {
+        trackContainer.innerHTML = '<p class="text-gray-500 text-sm col-span-full">请选择班级和日期以显示分层。</p>';
         return;
       }
-      hintEl.classList.add("hidden");
-      const list = TRACK_MAP[day][group];
-      list.forEach(t => {
-        const remain = remaining(day, group, t);
-        const div = document.createElement("label");
-        div.className = `flex justify-between items-center px-3 py-2 border rounded ${remain>0?'bg-white':'bg-gray-100 opacity-60'}`;
-        div.innerHTML = `
-          <div class="flex gap-2 items-center">
-            <input type="radio" name="track" value="${t}" ${remain<=0?'disabled':''} required class="text-blue-600" />
-            <span>${t}</span>
-          </div>
-          <span class="text-xs ${remain>0?'text-emerald-700':'text-red-600'}">${remain>0?'剩余 '+remain+'/8':'已满'}</span>`;
-        trackEl.appendChild(div);
+      const group = getGroup(classNum);
+      const options = TRACKS[day]?.[group] || [];
+      options.forEach(t => {
+        const remain = remaining(day, classNum, t);
+        const disabled = remain <= 0 ? 'disabled' : '';
+        trackContainer.innerHTML += `
+          <label class="flex justify-between px-3 py-2 border rounded ${remain<=0?'opacity-60':''}">
+            <div><input type="radio" name="track" value="${t}" required ${disabled}> ${t}</div>
+            <div class="text-xs ${remain>0?'text-green-700':'text-red-600'}">${remain>0?'剩余 '+remain+'/8':'已满'}</div>
+          </label>`;
       });
     }
 
-    document.querySelectorAll('input[name="day"]').forEach(r => r.addEventListener("change", renderTrackOptions));
-    classEl.addEventListener("change", renderTrackOptions);
+    document.querySelectorAll('input[name="day"]').forEach(el => el.addEventListener('change', renderTracks));
+    document.getElementById('classNumber').addEventListener('change', renderTracks);
 
-    form.addEventListener("submit", e => {
+    form.addEventListener('submit', e => {
       e.preventDefault();
-      const name = document.getElementById("studentName").value.trim();
-      const classNum = classEl.value;
+      const name = document.getElementById('studentName').value.trim();
+      const classNumber = document.getElementById('classNumber').value;
       const day = form.day.value;
       const track = form.track.value;
-      const group = getGroup(classNum);
-      const remain = remaining(day, group, track);
+      const remain = remaining(day, classNumber, track);
+
       if (remain <= 0) {
-        alert("该分层班级已满，请选择其他。");
+        alert('该分层已满，请选择其他。');
         return;
       }
 
-      refSignups.push({
+      const signup = {
         studentName: name,
-        classNumber: classNum,
-        day, group, track,
-        timestamp: firebase.database.ServerValue.TIMESTAMP
-      }).then(() => {
-        resultEl.classList.remove("hidden");
-        resultContent.innerHTML = `
-          <div>学生姓名：${name}</div>
-          <div>班级：六年级${classNum}班</div>
-          <div>日期：${DAY_LABEL[day]}</div>
-          <div>分层：${track}</div>
-          <div>提交时间：${new Date().toLocaleString()}</div>`;
-        form.reset();
-        renderTrackOptions();
-      }).catch(err => {
-        alert("提交失败，请稍后重试。");
-        console.error(err);
-      });
+        classNumber,
+        day,
+        track,
+        timestamp: new Date().toISOString()
+      };
+
+      signupsRef.push(signup)
+        .then(() => {
+          msgEl.className = "mt-4 p-4 rounded border border-green-300 bg-green-50 text-green-800";
+          msgEl.textContent = "报名成功！您的信息已提交。";
+          msgEl.classList.remove('hidden');
+          form.reset();
+          renderTracks();
+        })
+        .catch(err => {
+          msgEl.className = "mt-4 p-4 rounded border border-red-300 bg-red-50 text-red-800";
+          msgEl.textContent = "提交失败：" + err.message;
+          msgEl.classList.remove('hidden');
+        });
     });
   </script>
 </body>
