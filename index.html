@@ -548,24 +548,42 @@
         <div class="text-xs text-gray-600 mt-2">提交时间：${new Date(record.ts).toLocaleString()}</div>
       `;
       resultSection.classList.remove('hidden');
-    
-      try {
-        localStorage.setItem(
-          FORM_CACHE_KEY,
-          JSON.stringify({
-            studentNameCn,
-            studentNameEn,
-            phone,
-            classNumber,
-            day,
-            track,
-            note,
-          })
-        );
-      } catch {}
-    
-      renderTrackOptions();
-      renderSchedulePreview();
+
+      // 替换提示部分，增加按钮
+      const tipContainer = document.createElement("div");
+      tipContainer.className = "mt-3 flex items-center gap-2 text-xs text-green-800";
+      const tipText = document.createElement("span");
+      tipText.textContent = "提示：请截图保存上述信息。如需修改，可点击重新报名。";
+      const redoBtn = document.createElement("button");
+      redoBtn.textContent = "重新报名";
+      redoBtn.className = "text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700";
+
+      redoBtn.addEventListener("click", () => {
+        if (confirm("确定要重新报名吗？现有报名记录将从系统删除。")) {
+          // 按姓名匹配删除刚刚写入的记录
+          const nameToDelete = record.studentNameCn;
+          signupsRef.orderByChild("studentNameCn").equalTo(nameToDelete).once("value", snap => {
+            if (snap.exists()) {
+              const updates = {};
+              snap.forEach(child => {
+                updates[child.key] = null; // 删除节点
+              });
+              signupsRef.update(updates)
+                .then(() => {
+                  alert("✅ 已删除原报名记录，请重新填写。");
+                  location.reload(); // 刷新页面
+                })
+                .catch(err => alert("删除失败：" + err));
+            } else {
+              alert("未找到报名记录，请刷新重试。");
+            }
+          });
+        }
+      });
+
+      tipContainer.appendChild(tipText);
+      tipContainer.appendChild(redoBtn);
+      resultSection.appendChild(tipContainer);
     });
 
     // 重置
