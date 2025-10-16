@@ -372,6 +372,7 @@
       const list = loadSignups();
       return list.filter(r => r.day === day && r.group === group && r.track === track).length;
     }
+    
     function remainingFor(day, group, track) {
       return Math.max(0, MAX_PER_TRACK - countFor(day, group, track));
     }
@@ -451,6 +452,7 @@
         left.appendChild(topRow);
         if (teacherName) left.appendChild(teacherLine);
 
+        const classNumber = Number(form.elements["classNumber"].value);
         const remain = remainingFor(day, group, opt);
         const badge = document.createElement('span');
         badge.className = 'text-xs rounded px-2 py-0.5';
