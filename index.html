@@ -721,6 +721,36 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const signupsRef = db.ref("signups");
+
+    /* ---------- ✅ 实时根据 Firebase 更新剩余名额 ---------- */
+    let firebaseCounts = {}; // { english: { A: { ESL: 0, ... } }, math: { B: { S: 0, ... } } }
+    
+    // 监听实时数据库变化
+    signupsRef.on('value', snapshot => {
+      const data = snapshot.val() || {};
+      const counts = { english: { A: {}, B: {} }, math: { A: {}, B: {} } };
+    
+      Object.values(data).forEach(entry => {
+        const day = entry.date === "2025-11-11" ? "english" : (entry.date === "2025-11-14" ? "math" : null);
+        const group = entry.group;
+        const track = entry.track;
+        if (day && group && track) {
+          counts[day][group][track] = (counts[day][group][track] || 0) + 1;
+        }
+      });
+    
+      firebaseCounts = counts;
+      console.log("🔥 Firebase 报名统计已更新", firebaseCounts);
+    
+      // 若用户界面上显示分层选项，直接重新渲染
+      renderTrackOptions();
+    });
+    
+    // 替换原 remainingFor 函数
+    function remainingFor(day, group, track) {
+      const count = (firebaseCounts?.[day]?.[group]?.[track]) ?? 0;
+      return Math.max(0, MAX_PER_TRACK - count);
+    }
     
     function dayToDate(day){
       return day==="english" ? "2025-11-11" : day==="math" ? "2025-11-14" : "";
