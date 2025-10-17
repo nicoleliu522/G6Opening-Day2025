@@ -719,9 +719,15 @@
     clearAllBtn?.addEventListener('click', (e) => {
       e.preventDefault();
       if (!confirm('确认清空所有报名数据？该操作不可恢复。')) return;
+  
+      const confirmWord = prompt('为防误操作，请输入“清空”以确认删除所有数据：');
+      if (confirmWord !== '清空') {
+        alert('已取消操作。');
+        return;
+      }
+  
       try { localStorage.removeItem(STORAGE_KEY); } catch {}
       alert('已清空所有报名数据。');
-      // 刷新UI
       renderTrackOptions();
       if (!statsPanel.classList.contains('hidden')) renderStats();
     });
