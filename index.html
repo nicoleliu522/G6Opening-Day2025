@@ -893,15 +893,21 @@
     
         // 一键清空
         clearAllBtn.addEventListener("click", () => {
-          if (confirm("⚠️ 确认要删除所有报名记录吗？此操作不可恢复！")) {
-            signupsRef
-              .remove()
-              .then(() => {
-                alert("✅ 已清空所有记录。");
-                wrap.remove();
-              })
-              .catch(err => alert("删除失败：" + err));
+          if (!confirm("⚠️ 确认要删除所有报名记录吗？此操作不可恢复！")) return;
+      
+          const token = prompt('为防误操作，请输入“删除”以确认：');
+          if (token !== "删除") {
+            alert("已取消操作。");
+            return;
           }
+      
+          signupsRef
+            .remove()
+            .then(() => {
+              alert("✅ 已清空所有记录。");
+              wrap?.remove?.();
+            })
+            .catch(err => alert("删除失败：" + err));
         });
     
         // 导出为 Excel 文件
