@@ -1,527 +1,1014 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="utf-8" />
-  <title>万科双语学校 2025 五年级 家长开放日 选课</title>
+  <meta charset="UTF-8" />
+  <title>2025学年万科双语学校六年级家长开放日选课程序</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Tailwind 开发版（如需中国大陆稳定访问，建议后期改为本地构建或本地/校内CDN托管） -->
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    * { box-sizing: border-box; }
-    body { font-family: "PingFang SC", "Microsoft YaHei", Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #333; margin: 0; padding: 20px; }
-    .container { max-width: 1100px; margin: 0 auto; background: white; border-radius: 16px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,.2); position: relative; }
-    
-    .school-logo { position: absolute; top: 20px; left: 20px; width: 80px; height: auto; z-index: 10; }
-    
-    h1 { text-align: center; margin: 0 0 10px; font-size: 28px; color: #667eea; padding-top: 10px; }
-    .subtitle { text-align: center; color: #666; margin-bottom: 25px; font-size: 14px; line-height: 1.6; }
-    .admin-link { text-align: center; margin-bottom: 20px; }
-    .admin-link button { background: #10b981; color: white; border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; }
-    .admin-link button:hover { background: #059669; }
-    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }
-    .card { background: linear-gradient(145deg, #f8f9ff, #ffffff); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(102,126,234,.15); border: 2px solid #e0e7ff; }
-    .card h3 { margin: 0 0 15px; font-size: 18px; color: #667eea; border-bottom: 2px solid #667eea; padding-bottom: 8px; }
-    .row { margin: 8px 0; font-size: 14px; }
-    .label { font-weight: 600; color: #555; }
-    .value { margin-left: 6px; color: #333; }
-    .remaining { font-size: 20px; font-weight: bold; color: #667eea; }
-    .cta { display: inline-block; width: 100%; padding: 12px; margin-top: 12px; border-radius: 8px; border: none; cursor: pointer;
-           background: #667eea; color: #fff; font-weight: 600; font-size: 15px; transition: all .3s; }
-    .cta:hover:not([disabled]) { background: #5568d3; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102,126,234,.4); }
-    .cta[disabled] { background: #cbd5e1; cursor: not-allowed; transform: none; }
-    
-    .form-section { background: #f8f9ff; padding: 25px; border-radius: 12px; margin-bottom: 20px; }
-    .form-section h2 { margin: 0 0 20px; color: #667eea; font-size: 20px; }
-    .form-group { margin-bottom: 15px; }
-    .form-group label { display: block; margin-bottom: 6px; font-weight: 600; color: #555; font-size: 14px; }
-    .form-group label .required { color: #e11d48; }
-    .form-group input, .form-group select { width: 100%; padding: 10px 12px; border: 2px solid #e0e7ff; border-radius: 8px; font-size: 14px; }
-    .form-group input:focus, .form-group select:focus { outline: none; border-color: #667eea; }
-    
-    .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,.6); z-index: 1000; align-items: center; justify-content: center; }
-    .modal.active { display: flex; }
-    .modal-content { background: white; padding: 30px; border-radius: 16px; max-width: 500px; width: 90%; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,.3); }
-    .modal-content h2 { color: #10b981; margin: 0 0 15px; font-size: 24px; }
-    .modal-content .success-icon { font-size: 60px; margin-bottom: 15px; }
-    .modal-content p { color: #666; line-height: 1.8; margin: 10px 0; }
-    .modal-content .highlight { background: #fef3c7; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #f59e0b; }
-    .modal-content button { background: #667eea; color: white; border: none; padding: 12px 30px; border-radius: 8px; cursor: pointer; font-size: 15px; margin-top: 10px; }
-    
-    .admin-panel { display: none; padding-top: 70px; }
-    .admin-panel.active { display: block; }
-    .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .admin-header h1 { margin: 0; text-align: left; padding: 0; }
-    .admin-actions { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-    .admin-actions button { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all .3s; }
-    .btn-export { background: #10b981; color: white; }
-    .btn-export:hover { background: #059669; }
-    .btn-delete-all { background: #e11d48; color: white; }
-    .btn-delete-all:hover { background: #be123c; }
-    .btn-delete-single { background: #ef4444; color: white; padding: 6px 12px; font-size: 12px; border-radius: 4px; }
-    .btn-delete-single:hover { background: #dc2626; }
-    .admin-panel table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; }
-    .admin-panel th, .admin-panel td { border: 1px solid #e0e7ff; padding: 10px; text-align: left; }
-    .admin-panel th { background: #667eea; color: white; font-weight: 600; }
-    .admin-panel tr:nth-child(even) { background: #f8f9ff; }
-    .logout-btn { background: #e11d48; color: white; border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; transition: all .3s; }
-    .logout-btn:hover { background: #be123c; }
-    
-    @media (max-width: 980px) {
-      .grid { grid-template-columns: 1fr; }
-      .container { padding: 20px; padding-top: 100px; }
-      .school-logo { width: 60px; top: 15px; left: 15px; }
-      h1 { font-size: 22px; }
-      .admin-panel { padding-top: 50px; }
-      .admin-panel table { font-size: 11px; }
-      .admin-panel th, .admin-panel td { padding: 6px; }
-      .admin-header { flex-direction: column; gap: 10px; align-items: flex-start; }
-      .admin-header h1 { font-size: 22px; }
-    }
+    /* 轻量级基础样式兜底：若外部CDN未加载，仍保证基本可用 */
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif; }
+    input, select, textarea, button { font: inherit; }
   </style>
 </head>
-<body>
-  <div class="container">
-    <!-- 学校校徽 -->
-    <img src="logo.jpg" alt="万科双语学校校徽" class="school-logo" />
-    
-    <div id="user-view">
-      <h1>🏫 万科双语学校 2025 五年级 家长开放日</h1>
-      <div class="subtitle">
-        <strong>活动日期：2025年11月21日</strong><br>
-        说明：每位家长只能选择一节课观摩，每节课名额上限为 8 人，先到先得。
-      </div>
-      
-      <div class="admin-link">
-        <button onclick="showAdminLogin()">👤 管理员登录</button>
-      </div>
+<body class="bg-gray-50 text-gray-800">
+  <main class="max-w-4xl mx-auto p-6">
+    <header class="mb-6">
+      <h1 class="text-2xl font-bold">2025学年万科双语学校六年级家长开放日选课程序</h1>
+      <p class="text-sm text-gray-600 mt-1">
+        - 家长仅可选择其中一天参加；报名时需选择孩子的分层班级；报名只可提交一次。
+      </p>
+    </header>
 
-      <!-- 报名表单 -->
-      <div class="form-section">
-        <h2>📝 报名信息</h2>
-        <div class="form-group">
-          <label>学生中文姓名 <span class="required">*</span></label>
-          <input type="text" id="student-name-cn" placeholder="请输入学生中文姓名" required />
+    <!-- 视图/链接生成（仅管理员视图显示） -->
+    <section id="shareLinks" class="hidden bg-white rounded-lg shadow p-5 mb-6">
+      <h2 class="text-lg font-semibold mb-2">链接生成与分享</h2>
+      <p class="text-sm text-gray-600 mb-4">
+        已根据当前部署路径生成两条 HTTP 链接：家长选课程序与管理员工具。将页面部署到校内服务器或国内云厂商（HTTP 开启）后，这两条链接无需 VPN 即可访问。
+      </p>
+      <div class="space-y-3">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">家长选课程序链接</label>
+          <div class="flex gap-2">
+            <input id="parentUrl" class="flex-1 rounded border border-gray-300 px-3 py-2 text-sm" readonly />
+            <button id="copyParentUrl" class="px-3 py-2 rounded bg-blue-600 text-white text-sm hover:bg-blue-700">复制</button>
+          </div>
         </div>
-        <div class="form-group">
-          <label>学生英文姓名</label>
-          <input type="text" id="student-name-en" placeholder="请输入学生英文姓名（选填）" />
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">管理员工具链接</label>
+          <div class="flex gap-2">
+            <input id="adminUrl" class="flex-1 rounded border border-gray-300 px-3 py-2 text-sm" readonly />
+            <button id="copyAdminUrl" class="px-3 py-2 rounded bg-blue-600 text-white text-sm hover:bg-blue-700">复制</button>
+          </div>
         </div>
-        <div class="form-group">
-          <label>学生班级 <span class="required">*</span></label>
-          <select id="student-class" required>
-            <option value="">请选择班级</option>
-            <option value="五年级1班">五年级1班</option>
-            <option value="五年级2班">五年级2班</option>
-            <option value="五年级3班">五年级3班</option>
-            <option value="五年级4班">五年级4班</option>
-            <option value="五年级5班">五年级5班</option>
+        <p class="text-xs text-gray-500">
+          提示：链接使用 http:// 协议生成；请确保服务器或云存储开启 HTTP 访问并未强制跳转至 HTTPS。
+        </p>
+      </div>
+    </section>
+
+    <form id="signupForm" class="bg-white rounded-lg shadow p-5 space-y-5">
+      <h2 class="text-lg font-semibold">报名信息</h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <label class="block md:col-span-1">
+          <span class="block text-sm font-medium text-gray-700">学生中文名（必填）</span>
+          <input type="text" name="studentNameCn" required class="mt-1 w-full rounded border-gray-300 focus:ring-blue-500" placeholder="请输入中文名" />
+        </label>
+
+        <label class="block md:col-span-1">
+          <span class="block text-sm font-medium text-gray-700">学生英文名（可选）</span>
+          <input type="text" name="studentNameEn" class="mt-1 w-full rounded border-gray-300 focus:ring-blue-500" placeholder="请输入英文名" />
+        </label>
+
+        <label class="block md:col-span-1">
+          <span class="block text-sm font-medium text-gray-700">家长联系电话</span>
+          <input type="tel" name="phone" required class="mt-1 w-full rounded border-gray-300 focus:ring-blue-500" placeholder="请输入手机号" />
+        </label>
+
+        <label class="block md:col-span-1">
+          <span class="block text-sm font-medium text-gray-700">所在班级</span>
+          <select name="classNumber" id="classNumber" required
+                  class="mt-1 w-full rounded border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+            <option value="" disabled selected>请选择六年级班级</option>
+            <option value="1">六年级1班</option>
+            <option value="2">六年级2班</option>
+            <option value="3">六年级3班</option>
+            <option value="4">六年级4班</option>
+            <option value="5">六年级5班</option>
           </select>
+        </label>
+
+        <fieldset class="md:col-span-1">
+          <legend class="block text-sm font-medium text-gray-700">参加日期（仅可选其一）</legend>
+          <div class="flex items-center gap-4 mt-2">
+            <label class="inline-flex items-center gap-2">
+              <input type="radio" name="day" value="english" class="text-blue-600 focus:ring-blue-500" required />
+              <span>11月11日（英语）</span>
+            </label>
+            <label class="inline-flex items-center gap-2">
+              <input type="radio" name="day" value="math" class="text-blue-600 focus:ring-blue-500" />
+              <span>11月14日（数学）</span>
+            </label>
+          </div>
+        </fieldset>
+      </div>
+
+      <fieldset id="trackFieldset" class="space-y-2">
+        <legend class="text-sm font-medium text-gray-700">分层班级（每班限额 8）</legend>
+        <p id="trackHint" class="text-sm text-gray-500">
+          请先选择“所在班级”和“参加日期”，系统将展示可选分层班级、任课老师与剩余名额。
+        </p>
+        <div id="trackOptions" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2"></div>
+      </fieldset>
+
+      <section id="schedulePreview" class="hidden bg-gray-50 border border-gray-200 rounded p-3 text-sm">
+        <div class="font-medium mb-1">当日课节安排预览</div>
+        <div id="scheduleLines" class="space-y-1"></div>
+      </section>
+
+      <label class="block">
+        <span class="block text-sm font-medium text-gray-700">备注（可选）</span>
+        <textarea name="note" rows="3" class="mt-1 w-full rounded border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  placeholder="如有特殊情况可在此说明"></textarea>
+      </label>
+
+      <div class="flex items-start gap-2">
+        <input id="agree" type="checkbox" required class="mt-1 text-blue-600 focus:ring-blue-500" />
+        <label for="agree" class="text-sm text-gray-700">
+          我已知悉：家长只能选择其中一天参加，并确认所选分层班级与孩子实际分层一致。
+        </label>
+      </div>
+
+      <div class="flex gap-3">
+        <button type="submit"
+                class="inline-flex items-center justify-center px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700">
+          提交报名
+        </button>
+        <button type="reset"
+                class="inline-flex items-center justify-center px-4 py-2 rounded border border-gray-300 text-gray-700 hover:bg-gray-50">
+          重置
+        </button>
+      </div>
+    </form>
+
+    <section id="result" class="hidden mt-6 bg-green-50 border border-green-200 text-green-900 rounded-lg p-5">
+      <h3 class="font-semibold mb-2">报名成功</h3>
+      <div id="resultContent" class="text-sm space-y-1"></div>
+      <p class="text-xs text-green-800 mt-3">提示：请截图保存上述信息。</p>
+    </section>
+
+    <!-- 管理员工具（仅管理员视图显示） -->
+    <section id="adminTools" class="hidden mt-10 bg-white rounded-lg shadow p-5">
+      <details open>
+        <summary class="cursor-pointer font-semibold">管理员工具（导出报名/统计/清空）</summary>
+        <div class="mt-4 space-y-4 text-sm">
+          <div class="flex flex-wrap gap-2">
+            <button id="exportCsvBtn" class="px-3 py-2 rounded bg-emerald-600 text-white hover:bg-emerald-700">导出报名信息（CSV）</button>
+            <button id="showStatsBtn" class="px-3 py-2 rounded bg-indigo-600 text-white hover:bg-indigo-700">更新并查看分层剩余名额</button>
+            <button id="clearAllBtn" class="px-3 py-2 rounded bg-red-600 text-white hover:bg-red-700">清空所有报名（不可恢复）</button>
+          </div>
+          <div id="statsPanel" class="hidden">
+            <h4 class="font-medium mb-2">当前剩余名额（每班上限 8）</h4>
+            <div id="statsTables" class="space-y-4"></div>
+          </div>
+          <p class="text-xs text-gray-500">
+            说明：当前版本将报名数据存储在浏览器本地（localStorage）。若需多人同时报名统一限额与集中导出，请接入国内云（阿里云OSS/腾讯云COS）+ 简易后端或表格服务。
+          </p>
         </div>
-        <div class="form-group">
-          <label>家长联系电话 <span class="required">*</span></label>
-          <input type="tel" id="parent-phone" placeholder="请输入11位手机号码" pattern="[0-9]{11}" required />
-        </div>
-      </div>
+      </details>
+    </section>
+  </main>
 
-      <!-- 课程选择 -->
-      <h2 style="color: #667eea; margin-bottom: 15px;">📚 请选择要观摩的课程</h2>
-      <div class="grid" aria-label="选课三节课程">
-        <!-- 课程 1 -->
-        <section class="card">
-          <h3>P1 - 语文</h3>
-          <div class="row"><span class="label">👨‍🏫 老师：</span><span class="value">崔老师</span></div>
-          <div class="row"><span class="label">⏰ 时间：</span><span class="value">8:30 - 9:10</span></div>
-          <div class="row"><span class="label">📊 剩余名额：</span><span class="value remaining" id="class1-remaining">8</span></div>
-          <button id="class1-signup-btn" class="cta" type="button" onclick="signUpClass('class1')">立即报名</button>
-        </section>
+    <!-- Firebase SDK 初始化 -->
+  <script src="https://www.gstatic.com/firebasejs/11.5.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.5.0/firebase-database-compat.js"></script>
 
-        <!-- 课程 2 -->
-        <section class="card">
-          <h3>P2 - 英语 English</h3>
-          <div class="row"><span class="label">👨‍🏫 老师：</span><span class="value">Mr. Franks</span></div>
-          <div class="row"><span class="label">⏰ 时间：</span><span class="value">9:20 - 10:00</span></div>
-          <div class="row"><span class="label">📊 剩余名额：</span><span class="value remaining" id="class2-remaining">8</span></div>
-          <button id="class2-signup-btn" class="cta" type="button" onclick="signUpClass('class2')">立即报名</button>
-        </section>
+  <script>
+    // ========== 视图与链接 ==========
+    const params = new URLSearchParams(location.search);
+    const VIEW = params.get('view') || 'parent'; // 'parent' | 'admin'
+    const shareLinksSection = document.getElementById('shareLinks');
+    const adminToolsSection = document.getElementById('adminTools');
 
-        <!-- 课程 3 -->
-        <section class="card">
-          <h3>P3 - 数学</h3>
-          <div class="row"><span class="label">👨‍🏫 老师：</span><span class="value">何老师</span></div>
-          <div class="row"><span class="label">⏰ 时间：</span><span class="value">10:30 - 11:10</span></div>
-          <div class="row"><span class="label">📊 剩余名额：</span><span class="value remaining" id="class3-remaining">8</span></div>
-          <button id="class3-signup-btn" class="cta" type="button" onclick="signUpClass('class3')">立即报名</button>
-        </section>
-      </div>
-    </div>
+    function buildHttpLinks() {
+      const host = location.host || 'your-domain.example';
+      // 确保路径包含文件名（若部署为 /index.html，可保留；若为目录则仍可访问）
+      const path = location.pathname || '/index.html';
+      const base = 'http://' + host + path;
 
-    <!-- 管理员面板 -->
-    <div id="admin-view" class="admin-panel">
-      <!-- 管理员顶部导航 -->
-      <div class="admin-header">
-        <h1>🔐 管理员后台</h1>
-        <button class="logout-btn" onclick="logout()">退出登录</button>
-      </div>
-      
-      <h2 style="color: #667eea;">📋 所有报名信息</h2>
-      
-      <!-- 管理员操作按钮 -->
-      <div class="admin-actions">
-        <button class="btn-export" onclick="exportToExcel()">📥 导出为Excel</button>
-        <button class="btn-delete-all" onclick="deleteAllRecords()">🗑️ 一键删除所有</button>
-      </div>
-      
-      <div id="admin-data">
-        <table>
-          <thead>
-            <tr>
-              <th>学生中文姓名</th>
-              <th>学生英文姓名</th>
-              <th>学生班级</th>
-              <th>家长电话</th>
-              <th>报名课程</th>
-              <th>提交时间</th>
-              <th>操作</th>
-            </tr>
-          </thead>
-          <tbody id="admin-table-body">
-            <tr><td colspan="7" style="text-align:center; color: #999;">加载中...</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
+      const parentUrl = base + (base.includes('?') ? '&' : '?') + 'view=parent';
+      const adminUrl  = base + (base.includes('?') ? '&' : '?') + 'view=admin';
 
-  <!-- 成功弹窗 -->
-  <div id="success-modal" class="modal">
-    <div class="modal-content">
-      <div class="success-icon">✅</div>
-      <h2>报名成功！</h2>
-      <p><strong>学生姓名：</strong><span id="success-student-name"></span></p>
-      <p><strong>报名课程：</strong><span id="success-course"></span></p>
-      <div class="highlight">
-        <strong>⚠️ 重要提醒：</strong><br>
-        请立即截图保存此页面作为报名凭证！<br>
-        活动当天请携带截图入场。
-      </div>
-      <button onclick="closeSuccessModal()">我已截图</button>
-    </div>
-  </div>
+      const parentUrlEl = document.getElementById('parentUrl');
+      const adminUrlEl = document.getElementById('adminUrl');
+      if (parentUrlEl && adminUrlEl) {
+        parentUrlEl.value = parentUrl;
+        adminUrlEl.value = adminUrl;
 
-  <!-- 引入SheetJS库用于Excel导出 -->
-  <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
-
-  <script type="module">
-    // Firebase 配置
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-      databaseURL: "https://vkbs-2025-g5-open-day-default-rtdb.asia-southeast1.firebasedatabase.app/",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT_ID.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
-
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import { getDatabase, ref, onValue, runTransaction, set, get, remove } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    const capacity = 8;
-    const courseInfo = {
-      class1: { name: 'P1 (8:30-9:10) 语文（崔老师）', path: 'courses/class1' },
-      class2: { name: 'P2 (9:20-10:00) 英语 English（Mr. Franks）', path: 'courses/class2' },
-      class3: { name: 'P3 (10:30-11:10) 数学（何老师）', path: 'courses/class3' }
-    };
-
-    let isAdmin = false;
-    let allSignupsData = []; // 存储所有报名数据用于导出
-
-    // 实时监听剩余名额
-    function bindRemainingListeners() {
-      Object.keys(courseInfo).forEach((courseKey) => {
-        const remainingEl = document.getElementById(courseKey + '-remaining');
-        const courseRef = ref(db, courseInfo[courseKey].path);
-        
-        onValue(courseRef, (snap) => {
-          const data = snap.val() || {};
-          const signups = data.signups || {};
-          const used = Object.keys(signups).length;
-          const remaining = capacity - used;
-          
-          if (remainingEl) {
-            remainingEl.textContent = remaining;
-            remainingEl.style.color = remaining > 0 ? '#667eea' : '#e11d48';
-          }
-          
-          const btn = document.getElementById(courseKey + '-signup-btn');
-          if (btn && remaining <= 0) {
-            btn.disabled = true;
-            btn.textContent = '已满员';
-          }
-        });
-      });
+        const copyParentBtn = document.getElementById('copyParentUrl');
+        const copyAdminBtn = document.getElementById('copyAdminUrl');
+        function copy(text) {
+          navigator.clipboard?.writeText(text).then(() => {
+            alert('已复制到剪贴板');
+          }).catch(() => {
+            // 兼容不支持的环境
+            const ta = document.createElement('textarea');
+            ta.value = text; document.body.appendChild(ta);
+            ta.select(); document.execCommand('copy');
+            document.body.removeChild(ta);
+            alert('已复制到剪贴板');
+          });
+        }
+        copyParentBtn?.addEventListener('click', (e) => { e.preventDefault(); copy(parentUrl); });
+        copyAdminBtn?.addEventListener('click', (e) => { e.preventDefault(); copy(adminUrl); });
+      }
     }
 
-    // 验证表单
-    function validateForm() {
-      const nameCn = document.getElementById('student-name-cn').value.trim();
-      const studentClass = document.getElementById('student-class').value;
-      const phone = document.getElementById('parent-phone').value.trim();
-
-      if (!nameCn) {
-        alert('请输入学生中文姓名');
-        return false;
-      }
-      if (!studentClass) {
-        alert('请选择学生班级');
-        return false;
-      }
-      if (!phone || !/^1[3-9]\d{9}$/.test(phone)) {
-        alert('请输入正确的11位手机号码');
-        return false;
-      }
-      return true;
+    // 根据视图显隐模块
+    if (VIEW === 'admin') {
+      shareLinksSection.classList.remove('hidden');
+      adminToolsSection.classList.remove('hidden');
+      buildHttpLinks();
+    } else {
+      // 家长视图隐藏管理员相关
+      shareLinksSection.remove();
+      adminToolsSection.remove();
     }
 
-    // 报名课程
-    window.signUpClass = async function(courseKey) {
-      if (!validateForm()) return;
+    // ========== 常量与配置 ==========
+    const MAX_PER_TRACK = 8;
+    const STORAGE_KEY = 'openDaySignups'; // 全部报名记录数组
+    const FORM_CACHE_KEY = 'openDaySignupCache'; // 表单缓存
 
-      const nameCn = document.getElementById('student-name-cn').value.trim();
-      const nameEn = document.getElementById('student-name-en').value.trim();
-      const studentClass = document.getElementById('student-class').value;
-      const phone = document.getElementById('parent-phone').value.trim();
+    const DAY_LABEL = {
+      english: '11月11日（英语，上午）',
+      math: '11月14日（数学，上午）',
+    };
 
-      // 检查手机号是否已报名
-      const allCoursesRef = ref(db, 'courses');
-      const allCoursesSnap = await get(allCoursesRef);
-      const allCourses = allCoursesSnap.val() || {};
-      
-      let alreadySignedCourse = null;
-      for (let ck in allCourses) {
-        const signups = allCourses[ck].signups || {};
-        for (let sid in signups) {
-          if (signups[sid].phone === phone) {
-            alreadySignedCourse = ck;
-            break;
-          }
+    // 分层映射
+    const TRACK_MAP = {
+      english: {
+        A: ['ESL', 'R/F.a', 'R/F.b', 'H'],
+        B: ['ESL', 'R/F', 'H'],
+      },
+      math: {
+        A: ['S1', 'S2', 'H'],
+        B: ['S', 'H'],
+      },
+    };
+
+    // 任教老师映射
+    const TEACHER_MAP = {
+      english: {
+        A: {
+          'ESL': 'Ms. Chloe and Mr. Brian',
+          'R/F.a': 'Mr. Matthew & Ms. Kimberly',
+          'R/F.b': 'Mr. Henry & Ms. Kimberly',
+          'H': 'Ms. Arne',
+        },
+        B: {
+          'ESL': 'Ms. Chloe and Mr. Brian',
+          'R/F': 'Mr. Matthew & Ms. Kimberly',
+          'H': 'Ms. Arne',
         }
-        if (alreadySignedCourse) break;
+      },
+      math: {
+        A: {
+          'S1': '涂恋恋',
+          'S2': '刘宝',
+          'H': '魏文萱',
+        },
+        B: {
+          'S': '涂恋恋',
+          'H': '秦蓉蓉',
+        }
+      }
+    };
+
+    // 课节安排函数（包含分层任课老师）
+    function getSchedule(day, classNumber, track) {
+      const n = Number(classNumber);
+      const isA = [1,2,3].includes(n);
+      const group = isA ? 'A' : 'B';
+      const trackTeacher = (TEACHER_MAP[day] && TEACHER_MAP[day][group]) ? (TEACHER_MAP[day][group][track] || '') : '';
+
+      function extraForEnglishDay(n) {
+        if (n === 1) return '中文科学（王金莉）';
+        if (n === 2) return 'STEM（Mr. James）';
+        if (n === 3) return '中文科学（杜铁牛）';
+        if (n === 4) return 'General Sciences（Mr. P）';
+        if (n === 5) return '地理（姚瑶）';
+        return '';
+      }
+      function extraForMathDay(n) {
+        if (n === 1) return '语文（陈青）';
+        if (n === 2) return 'General Sciences（Mr. P）';
+        if (n === 3) return '语文（师庆庆）';
+        if (n === 4) return '语文（师庆庆）';
+        if (n === 5) return '语文（顾江溪）';
+        return '';
       }
 
-      if (alreadySignedCourse && alreadySignedCourse !== courseKey) {
-        const confirmMsg = `该手机号已报名${courseInfo[alreadySignedCourse].name}，是否切换到${courseInfo[courseKey].name}？`;
-        if (!confirm(confirmMsg)) return;
-      }
-
-      const courseRef = ref(db, courseInfo[courseKey].path);
-      
-      const result = await runTransaction(courseRef, (current) => {
-        if (!current) current = {};
-        if (!current.signups) current.signups = {};
-        
-        const signups = current.signups;
-        const occupied = Object.keys(signups).length;
-        
-        if (occupied >= capacity) {
-          return; // 已满
+      if (day === 'english') {
+        if (isA) {
+          return {
+            p1: `英语分层课（${track}，教师：${trackTeacher}）`,
+            p2: extraForEnglishDay(n),
+            trackTeacher
+          };
         }
-        
-        const signupId = 'signup_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-        signups[signupId] = {
-          studentNameCn: nameCn,
-          studentNameEn: nameEn,
-          studentClass: studentClass,
-          phone: phone,
-          timestamp: new Date().toISOString(),
-          course: courseInfo[courseKey].name
+        return {
+          p1: extraForEnglishDay(n),
+          p2: `英语分层课（${track}，教师：${trackTeacher}）`,
+          trackTeacher
         };
-        
-        current.signups = signups;
-        return current;
+      } else if (day === 'math') {
+        if (isA) {
+          return {
+            p1: extraForMathDay(n),
+            p2: `数学分层课（${track}，教师：${trackTeacher}）`,
+            trackTeacher
+          };
+        }
+        return {
+          p1: `数学分层课（${track}，教师：${trackTeacher}）`,
+          p2: extraForMathDay(n),
+          trackTeacher
+        };
+      }
+      return { p1: '', p2: '', trackTeacher };
+    }
+
+    // DOM 查询
+    const form = document.getElementById('signupForm');
+    const classNumberEl = document.getElementById('classNumber');
+    const trackOptionsEl = document.getElementById('trackOptions');
+    const trackHintEl = document.getElementById('trackHint');
+    const schedulePreview = document.getElementById('schedulePreview');
+    const scheduleLines = document.getElementById('scheduleLines');
+    const resultSection = document.getElementById('result');
+    const resultContent = document.getElementById('resultContent');
+
+    // 管理员工具 DOM（在管理员视图下才存在）
+    const exportCsvBtn = document.getElementById('exportCsvBtn');
+    const showStatsBtn = document.getElementById('showStatsBtn');
+    const clearAllBtn = document.getElementById('clearAllBtn');
+    const statsPanel = document.getElementById('statsPanel');
+    const statsTables = document.getElementById('statsTables');
+
+    // 工具函数
+    function getSelectedDay() {
+      const day = form.querySelector('input[name="day"]:checked');
+      return day ? day.value : null; // 'english' | 'math'
+    }
+    function getClassGroup() {
+      const val = classNumberEl.value;
+      if (!val) return null;
+      const n = Number(val);
+      if ([1,2,3].includes(n)) return 'A';
+      if ([4,5].includes(n)) return 'B';
+      return null;
+    }
+    function sanitizeId(str) {
+      return str.toString().trim().toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    }
+
+    // 数据存取
+    function loadSignups() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return [];
+        const arr = JSON.parse(raw);
+        return Array.isArray(arr) ? arr : [];
+      } catch { return []; }
+    }
+    function saveSignups(list) {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); } catch {}
+    }
+
+    function countFor(day, group, track) {
+      const list = loadSignups();
+      return list.filter(r => r.day === day && r.group === group && r.track === track).length;
+    }
+
+    function remainingFor(day, group, track) {
+      return Math.max(0, MAX_PER_TRACK - countFor(day, group, track));
+    }
+
+    function clearTrackOptions() {
+      trackOptionsEl.innerHTML = '';
+      form.querySelectorAll('input[name="track"]').forEach(el => {
+        el.required = false;
+        el.disabled = true;
+      });
+    }
+
+    function renderSchedulePreview() {
+      const day = getSelectedDay();
+      const cn = form.elements['classNumber'].value;
+      const trackEl = form.querySelector('input[name="track"]:checked');
+      const track = trackEl ? trackEl.value : null;
+      if (!day || !cn || !track) {
+        schedulePreview.classList.add('hidden');
+        scheduleLines.innerHTML = '';
+        return;
+      }
+      const s = getSchedule(day, Number(cn), track);
+      scheduleLines.innerHTML = `
+        <div>第一节：${s.p1}</div>
+        <div>第二节：${s.p2}</div>
+      `;
+      schedulePreview.classList.remove('hidden');
+    }
+
+    function renderTrackOptions() {
+      const day = getSelectedDay();
+      const group = getClassGroup();
+      clearTrackOptions();
+      schedulePreview.classList.add('hidden');
+      scheduleLines.innerHTML = '';
+
+      if (!day || !group) {
+        trackHintEl.classList.remove('hidden');
+        return;
+      }
+
+      const options = TRACK_MAP[day][group] || [];
+      trackHintEl.classList.add('hidden');
+
+      const frag = document.createDocumentFragment();
+      options.forEach(opt => {
+        const id = 'track-' + sanitizeId(day + '-' + group + '-' + opt);
+        const wrapper = document.createElement('label');
+        wrapper.className = 'flex items-center justify-between gap-3 rounded border border-gray-200 px-3 py-2 hover:bg-gray-50';
+
+        const left = document.createElement('div');
+        left.className = 'flex flex-col';
+
+        const topRow = document.createElement('div');
+        topRow.className = 'flex items-center gap-2';
+
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.name = 'track';
+        input.value = opt;
+        input.id = id;
+        input.className = 'text-blue-600 focus:ring-blue-500';
+        input.required = true;
+
+        const span = document.createElement('span');
+        span.textContent = opt;
+
+        topRow.appendChild(input);
+        topRow.appendChild(span);
+
+        const teacherName = (TEACHER_MAP[day] && TEACHER_MAP[day][group]) ? (TEACHER_MAP[day][group][opt] || '') : '';
+        const teacherLine = document.createElement('div');
+        teacherLine.className = 'text-xs text-gray-500 pl-6';
+        teacherLine.textContent = teacherName ? `教师：${teacherName}` : '';
+
+        left.appendChild(topRow);
+        if (teacherName) left.appendChild(teacherLine);
+
+        const classNumber = Number(form.elements["classNumber"].value);
+        const remain = remainingFor(day, group, opt);
+        const badge = document.createElement('span');
+        badge.className = 'text-xs rounded px-2 py-0.5';
+        if (remain > 0) {
+          badge.textContent = `剩余 ${remain}/${MAX_PER_TRACK}`;
+          badge.classList.add('bg-emerald-50','text-emerald-700','border','border-emerald-200');
+        } else {
+          badge.textContent = '已满';
+          badge.classList.add('bg-red-50','text-red-700','border','border-red-200');
+          input.disabled = true;
+        }
+
+        wrapper.appendChild(left);
+        wrapper.appendChild(badge);
+        frag.appendChild(wrapper);
       });
 
-      if (!result.committed) {
-        alert('报名失败：该课程已满员，请选择其他课程。');
+      trackOptionsEl.appendChild(frag);
+
+      // 选择分层后展示课节预览
+      form.querySelectorAll('input[name="track"]').forEach(r => {
+        r.addEventListener('change', renderSchedulePreview);
+      });
+    }
+
+    // 事件绑定：日期/班级变化时更新分层选项
+    form.querySelectorAll('input[name="day"]').forEach(r => r.addEventListener('change', renderTrackOptions));
+    classNumberEl.addEventListener('change', renderTrackOptions);
+
+    // 提交处理
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (!form.reportValidity()) return;
+
+      const data = new FormData(form);
+      const studentNameCn = (data.get('studentNameCn') || '').toString().trim();
+      const studentNameEn = (data.get('studentNameEn') || '').toString().trim();
+      const phone = (data.get('phone') || '').toString().trim();
+      const classNumber = Number(data.get('classNumber'));
+      const day = data.get('day'); // english / math
+      const group = [1, 2, 3].includes(classNumber) ? 'A' : 'B';
+      const track = data.get('track');
+      const note = (data.get('note') || '').toString().trim();
+
+      if (!studentNameCn || !phone || !classNumber || !day || !track) {
+        alert('请完整填写必填项！');
         return;
       }
 
-      // 如果之前报名了其他课程，删除旧的报名
-      if (alreadySignedCourse && alreadySignedCourse !== courseKey) {
-        const oldCourseRef = ref(db, courseInfo[alreadySignedCourse].path);
-        await runTransaction(oldCourseRef, (current) => {
-          if (!current || !current.signups) return current;
-          const signups = current.signups;
-          for (let sid in signups) {
-            if (signups[sid].phone === phone) {
-              delete signups[sid];
-              break;
+      // 再次检查容量（避免边界条件）
+      if (remainingFor(day, group, track) <= 0) {
+        alert('抱歉，该分层班级名额已满，请选择其他分层或更换日期/班级组合。');
+        renderTrackOptions();
+        return;
+      }
+
+      const s = getSchedule(day, classNumber, track);
+      const record = {
+        id:
+          (window.crypto && crypto.randomUUID)
+            ? crypto.randomUUID()
+            : String(Date.now()) + Math.random().toString(16).slice(2),
+        ts: new Date().toISOString(),
+        studentNameCn,
+        studentNameEn,
+        phone,
+        classNumber,
+        day,
+        dayLabel: DAY_LABEL[day],
+        group,
+        track,
+        trackTeacher: s.trackTeacher || '',
+        period1: s.p1,
+        period2: s.p2,
+        note,
+      };
+
+      const list = loadSignups();
+      list.push(record);
+      saveSignups(list);
+
+      // 显示结果
+      resultContent.innerHTML = `
+        <div><span class="font-medium">学生姓名：</span>${studentNameCn}${studentNameEn ? ` (${studentNameEn})` : ''}</div>
+        <div><span class="font-medium">联系电话：</span>${phone}</div>
+        <div><span class="font-medium">所在班级：</span>六年级${classNumber}班</div>
+        <div><span class="font-medium">参加日期：</span>${DAY_LABEL[day]}</div>
+        <div><span class="font-medium">分层班级：</span>${track}</div>
+        <div><span class="font-medium">分层任教老师：</span>${record.trackTeacher || '-'}</div>
+        <div class="mt-2"><span class="font-medium">第一节：</span>${s.p1}</div>
+        <div><span class="font-medium">第二节：</span>${s.p2}</div>
+        ${note ? `<div class="mt-2"><span class="font-medium">备注：</span>${note}</div>` : ''}
+        <div class="text-xs text-gray-600 mt-2">提交时间：${new Date(record.ts).toLocaleString()}</div>
+      `;
+      resultSection.classList.remove('hidden');
+
+      // 替换提示部分，增加按钮
+      const tipContainer = document.createElement("div");
+      tipContainer.className = "mt-3 flex items-center gap-2 text-xs text-green-800";
+      const tipText = document.createElement("span");
+      tipText.textContent = "如需修改，可点击重新报名：";
+      const redoBtn = document.createElement("button");
+      redoBtn.textContent = "重新报名";
+      redoBtn.className = "text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700";
+
+      redoBtn.addEventListener("click", () => {
+        if (confirm("确定要重新报名吗？现有报名记录将从系统删除。")) {
+          // 按姓名匹配删除刚刚写入的记录
+          const nameToDelete = record.studentNameCn;
+          signupsRef.orderByChild("studentNameCn").equalTo(nameToDelete).once("value", snap => {
+            if (snap.exists()) {
+              const updates = {};
+              snap.forEach(child => {
+                updates[child.key] = null; // 删除节点
+              });
+              signupsRef.update(updates)
+                .then(() => {
+                  alert("✅ 已删除原报名记录，请重新填写。");
+                  location.reload(); // 刷新页面
+                })
+                .catch(err => alert("删除失败：" + err));
+            } else {
+              alert("未找到报名记录，请刷新重试。");
             }
-          }
-          return current;
-        });
-      }
-
-      // 显示成功弹窗
-      document.getElementById('success-student-name').textContent = nameCn;
-      document.getElementById('success-course').textContent = courseInfo[courseKey].name;
-      document.getElementById('success-modal').classList.add('active');
-    };
-
-    window.closeSuccessModal = function() {
-      document.getElementById('success-modal').classList.remove('active');
-      // 清空表单
-      document.getElementById('student-name-cn').value = '';
-      document.getElementById('student-name-en').value = '';
-      document.getElementById('student-class').value = '';
-      document.getElementById('parent-phone').value = '';
-    };
-
-    // 管理员登录
-    window.showAdminLogin = function() {
-      const username = prompt('请输入管理员用户名：');
-      const password = prompt('请输入管理员密码：');
-      
-      if (username === 'admin' && password === '123') {
-        isAdmin = true;
-        document.getElementById('user-view').style.display = 'none';
-        document.getElementById('admin-view').classList.add('active');
-        loadAdminData();
-      } else {
-        alert('用户名或密码错误！');
-      }
-    };
-
-    window.logout = function() {
-      isAdmin = false;
-      document.getElementById('user-view').style.display = 'block';
-      document.getElementById('admin-view').classList.remove('active');
-    };
-
-    // 删除单条记录
-    window.deleteSingleRecord = async function(courseKey, signupId) {
-      if (!confirm('确定要删除这条报名记录吗？')) return;
-      
-      try {
-        const signupRef = ref(db, `${courseInfo[courseKey].path}/signups/${signupId}`);
-        await remove(signupRef);
-        alert('删除成功！');
-      } catch (error) {
-        console.error('删除失败：', error);
-        alert('删除失败，请重试！');
-      }
-    };
-
-    // 一键删除所有记录
-    window.deleteAllRecords = async function() {
-      const confirmation = prompt('⚠️ 警告：此操作将删除所有报名记录！\n\n请输入"确认删除"以继续：');
-      
-      if (confirmation !== '确认删除') {
-        alert('操作已取消');
-        return;
-      }
-
-      try {
-        const allCoursesRef = ref(db, 'courses');
-        await remove(allCoursesRef);
-        alert('所有记录已删除！');
-      } catch (error) {
-        console.error('删除失败：', error);
-        alert('删除失败，请重试！');
-      }
-    };
-
-    // 导出为Excel
-    window.exportToExcel = function() {
-      if (allSignupsData.length === 0) {
-        alert('暂无数据可导出！');
-        return;
-      }
-
-      // 准备Excel数据
-      const excelData = allSignupsData.map(signup => ({
-        '学生中文姓名': signup.studentNameCn,
-        '学生英文姓名': signup.studentNameEn || '-',
-        '学生班级': signup.studentClass,
-        '家长电话': signup.phone,
-        '报名课程': signup.course,
-        '提交时间': new Date(signup.timestamp).toLocaleString('zh-CN')
-      }));
-
-      // 创建工作簿
-      const ws = XLSX.utils.json_to_sheet(excelData);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, '报名信息');
-
-      // 设置列宽
-      ws['!cols'] = [
-        { wch: 15 }, // 学生中文姓名
-        { wch: 20 }, // 学生英文姓名
-        { wch: 12 }, // 学生班级
-        { wch: 15 }, // 家长电话
-        { wch: 35 }, // 报名课程
-        { wch: 20 }  // 提交时间
-      ];
-
-      // 生成文件名
-      const fileName = `万科双语学校家长开放日报名_${new Date().toLocaleDateString('zh-CN').replace(/\//g, '-')}.xlsx`;
-
-      // 导出
-      XLSX.writeFile(wb, fileName);
-    };
-
-    // 加载管理员数据
-    function loadAdminData() {
-      const allCoursesRef = ref(db, 'courses');
-      onValue(allCoursesRef, (snap) => {
-        const courses = snap.val() || {};
-        const tbody = document.getElementById('admin-table-body');
-        tbody.innerHTML = '';
-        
-        allSignupsData = []; // 清空并重新收集数据
-        
-        for (let courseKey in courses) {
-          const signups = courses[courseKey].signups || {};
-          for (let signupId in signups) {
-            const signup = signups[signupId];
-            signup._courseKey = courseKey; // 保存课程key用于删除
-            signup._signupId = signupId;   // 保存报名ID用于删除
-            allSignupsData.push(signup);
-          }
-        }
-        
-        // 按时间排序
-        allSignupsData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-        
-        if (allSignupsData.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color: #999;">暂无报名数据</td></tr>';
-        } else {
-          allSignupsData.forEach(signup => {
-            const row = tbody.insertRow();
-            row.insertCell(0).textContent = signup.studentNameCn;
-            row.insertCell(1).textContent = signup.studentNameEn || '-';
-            row.insertCell(2).textContent = signup.studentClass;
-            row.insertCell(3).textContent = signup.phone;
-            row.insertCell(4).textContent = signup.course;
-            row.insertCell(5).textContent = new Date(signup.timestamp).toLocaleString('zh-CN');
-            
-            // 添加删除按钮
-            const actionCell = row.insertCell(6);
-            const deleteBtn = document.createElement('button');
-            deleteBtn.textContent = '删除';
-            deleteBtn.className = 'btn-delete-single';
-            deleteBtn.onclick = () => deleteSingleRecord(signup._courseKey, signup._signupId);
-            actionCell.appendChild(deleteBtn);
           });
         }
       });
+
+      tipContainer.appendChild(tipText);
+      tipContainer.appendChild(redoBtn);
+      resultSection.appendChild(tipContainer);
+    });
+
+    // 重置
+    form.addEventListener('reset', () => {
+      setTimeout(() => {
+        trackOptionsEl.innerHTML = '';
+        trackHintEl.classList.remove('hidden');
+        schedulePreview.classList.add('hidden');
+        scheduleLines.innerHTML = '';
+        resultSection.classList.add('hidden');
+        try { localStorage.removeItem(FORM_CACHE_KEY); } catch {}
+      }, 0);
+    });
+
+    // 页面加载时恢复表单缓存
+    (function restoreFormCache() {
+      try {
+        const raw = localStorage.getItem(FORM_CACHE_KEY);
+        if (!raw) return;
+        const data = JSON.parse(raw);
+        if (data.studentName) form.elements['studentName'].value = data.studentName;
+        if (data.classNumber) classNumberEl.value = data.classNumber;
+        if (data.day) {
+          const dayEl = form.querySelector(`input[name="day"][value="${data.day}"]`);
+          if (dayEl) dayEl.checked = true;
+        }
+        if (data.note) form.elements['note'].value = data.note;
+        renderTrackOptions();
+        if (data.track) {
+          const id = 'track-' + sanitizeId(data.day + '-' + getClassGroup() + '-' + data.track);
+          const trackEl = document.getElementById(id);
+          if (trackEl && !trackEl.disabled) {
+            trackEl.checked = true;
+            renderSchedulePreview();
+          }
+        }
+      } catch {}
+    })();
+
+    // ========== 管理员工具：导出 / 统计 / 清空 ==========
+    function toCsvValue(v) {
+      const s = (v ?? '').toString();
+      if (/[",\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+      return s;
+    }
+    function exportCsv() {
+      const list = loadSignups();
+      const header = [
+        '提交时间ISO','提交时间本地','学生姓名','班级','日期','日期标签','分组','分层班级','分层任教老师','第一节','第二节','备注'
+      ];
+      const rows = list.map(r => ([
+        r.ts,
+        new Date(r.ts).toLocaleString(),
+        r.studentName,
+        `六年级${r.classNumber}班`,
+        r.day,
+        r.dayLabel,
+        r.group,
+        r.track,
+        r.trackTeacher || '',
+        r.period1,
+        r.period2,
+        r.note || ''
+      ]));
+      const csv = [header, ...rows].map(row => row.map(toCsvValue).join(',')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = '六年级家长开放日报名.csv';
+      document.body.appendChild(a);
+      a.click();
+      URL.revokeObjectURL(url);
+      a.remove();
+    }
+    exportCsvBtn?.addEventListener('click', (e) => { e.preventDefault(); exportCsv(); });
+
+    function renderStats() {
+      if (!statsTables) return;
+      statsTables.innerHTML = '';
+
+      function remainingFor(day, group, track) {
+        return Math.max(0, MAX_PER_TRACK - countFor(day, group, track));
+      }
+
+      function makeTable(title, dayKey, groups) {
+        const container = document.createElement('div');
+        const h = document.createElement('div');
+        h.className = 'font-medium';
+        h.textContent = title;
+        container.appendChild(h);
+
+        const grid = document.createElement('div');
+        grid.className = 'mt-2 grid sm:grid-cols-2 gap-3';
+
+        groups.forEach(g => {
+          const card = document.createElement('div');
+          card.className = 'border rounded p-3';
+          const head = document.createElement('div');
+          head.className = 'font-semibold mb-2';
+          head.textContent = `分组 ${g}`;
+          card.appendChild(head);
+
+          const opts = TRACK_MAP[dayKey][g];
+          opts.forEach(track => {
+            const remain = remainingFor(dayKey, g, track);
+            const line = document.createElement('div');
+            line.className = 'flex justify-between text-sm py-1';
+            const name = document.createElement('span');
+            const t = (TEACHER_MAP[dayKey] && TEACHER_MAP[dayKey][g]) ? (TEACHER_MAP[dayKey][g][track] || '') : '';
+            name.textContent = t ? `${track}（${t}）` : track;
+            const val = document.createElement('span');
+            val.textContent = `${remain}/${MAX_PER_TRACK}`;
+            val.className = remain > 0 ? 'text-emerald-700' : 'text-red-700';
+            line.appendChild(name);
+            line.appendChild(val);
+            card.appendChild(line);
+          });
+
+          grid.appendChild(card);
+        });
+
+        container.appendChild(grid);
+        return container;
+      }
+
+      statsTables.appendChild(makeTable('11月11日（英语）', 'english', ['A','B']));
+      statsTables.appendChild(makeTable('11月14日（数学）', 'math', ['A','B']));
+      statsPanel.classList.remove('hidden');
+    }
+    showStatsBtn?.addEventListener('click', (e) => { e.preventDefault(); renderStats(); });
+
+    clearAllBtn?.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (!confirm('确认清空所有报名数据？该操作不可恢复。')) return;
+
+      const confirmWord = prompt('为防误操作，请输入“清空”以确认删除所有数据：');
+      if (confirmWord !== '清空') {
+        alert('已取消操作。');
+        return;
+      }
+
+      try { localStorage.removeItem(STORAGE_KEY); } catch {}
+      alert('已清空所有报名数据。');
+      renderTrackOptions();
+      if (!statsPanel.classList.contains('hidden')) renderStats();
+    });
+
+    /* ---------- Firebase 配置 BEGIN ---------- */
+    const firebaseConfig = {
+      apiKey: "AIzaSyALbRZ6P-azQhY55YUbyC-Np6zewqb2WdY",
+      authDomain: "opening-day-a4824.firebaseapp.com",
+      databaseURL: "https://opening-day-a4824-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "opening-day-a4824",
+      storageBucket: "opening-day-a4824.firebasestorage.app",
+      messagingSenderId: "827603104559",
+      appId: "1:827603104559:web:ad7e69bb5a67bf0d1f67da"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const signupsRef = db.ref("signups");
+
+    /* ---------- ✅ 实时根据 Firebase 更新剩余名额 ---------- */
+    let firebaseCounts = {}; // { english: { A: { ESL: 0, ... } }, math: { B: { S: 0, ... } } }
+
+    // 监听实时数据库变化
+    signupsRef.on('value', snapshot => {
+      const data = snapshot.val() || {};
+      const counts = { english: { A: {}, B: {} }, math: { A: {}, B: {} } };
+
+      Object.values(data).forEach(entry => {
+        const day = entry.date === "2025-11-11" ? "english" : (entry.date === "2025-11-14" ? "math" : null);
+        const group = entry.group;
+        const track = entry.track;
+        if (day && group && track) {
+          counts[day][group][track] = (counts[day][group][track] || 0) + 1;
+        }
+      });
+
+      firebaseCounts = counts;
+      console.log("🔥 Firebase 报名统计已更新", firebaseCounts);
+
+      // 若用户界面上显示分层选项，直接重新渲染
+      renderTrackOptions();
+    });
+
+    // 替换原 remainingFor 函数
+    function remainingFor(day, group, track) {
+      const count = (firebaseCounts?.[day]?.[group]?.[track]) ?? 0;
+      return Math.max(0, MAX_PER_TRACK - count);
     }
 
-    // 初始化
-    document.addEventListener('DOMContentLoaded', () => {
-      bindRemainingListeners();
+    function dayToDate(day){
+      return day==="english" ? "2025-11-11" : day==="math" ? "2025-11-14" : "";
+    }
+
+    /* ---------- 提交表单写入 Firebase 前防重复 ---------- */
+    form.addEventListener("submit", (e)=>{
+      setTimeout(()=>{
+        try{
+          const list = loadSignups();
+          if(!list?.length) return;
+          const last = list.at(-1);
+          if(last.firebaseSync) return;
+
+          const cnName = last.studentNameCn?.trim();
+          if(!cnName) return;
+
+          // 检查重复（中文名相同视为重复）
+          signupsRef.orderByChild("studentNameCn").equalTo(cnName).once("value", snap=>{
+            if(snap.exists()){
+              alert("⚠️ 此学生已报名过，不能重复提交。");
+              return;
+            }
+            const payload = {
+              studentNameCn: last.studentNameCn || "",
+              studentNameEn: last.studentNameEn || "",
+              phone: last.phone || "",
+              classNumber: last.classNumber || "",
+              group: last.group || "",
+              track: last.track || "",
+              trackTeacher: last.trackTeacher || "",
+              period1: last.period1 || "",
+              period2: last.period2 || "",
+              note: last.note || "",
+              date: dayToDate(last.day),
+              timestamp: last.ts || new Date().toISOString()
+            };
+            signupsRef.push(payload).then(()=>{
+              last.firebaseSync=true;
+              saveSignups(list);
+              console.log("✅ 已写入 Firebase",payload);
+            }).catch(err=>console.error(err));
+          });
+        }catch(err){
+          console.error("Firebase 同步错误",err);
+        }
+      },100);
     });
+
+    /* ---------- 管理员登录按钮 ---------- */
+    const headerEl = document.querySelector("header");
+    const adminBtn = document.createElement("button");
+    adminBtn.textContent = "管理员登录";
+    adminBtn.className =
+      "ml-auto mt-3 md:mt-0 bg-indigo-600 text-white text-sm px-3 py-1.5 rounded hover:bg-indigo-700";
+    // 让 header 内部成为 flex 布局，保证标题和按钮在一行（宽屏），窄屏自动换行
+    headerEl.classList.add("flex", "flex-wrap", "items-center", "gap-2");
+
+    headerEl.appendChild(adminBtn);
+
+    adminBtn.addEventListener("click", () => {
+      const user = prompt("请输入管理员用户名：");
+      const pass = prompt("请输入管理员密码：");
+      if (user === "admin" && pass === "123") {
+        showAdminTable();
+      } else alert("用户名或密码错误");
+    });
+
+    function showAdminTable() {
+      // 动态加载 SheetJS 库（仅在首次使用时加载）
+      if (!window.XLSX) {
+        const script = document.createElement("script");
+        script.src = "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";
+        document.head.appendChild(script);
+      }
+
+      signupsRef.once("value").then(snap => {
+        const data = snap.val();
+        if (!data) {
+          alert("暂无报名记录");
+          return;
+        }
+        const entries = Object.entries(data); // [ [key, value], ... ]
+
+        const wrap = document.createElement("div");
+        wrap.className = "fixed inset-0 bg-black/40 flex items-center justify-center z-50";
+
+        const box = document.createElement("div");
+        box.className = "bg-white rounded p-4 shadow-lg max-h-[85vh] overflow-auto w-11/12 max-w-6xl";
+
+        // 顶部条
+        const topBar = document.createElement("div");
+        topBar.className = "mb-3 flex flex-wrap items-center justify-between gap-2";
+
+        const leftTitle = document.createElement("h2");
+        leftTitle.textContent = "报名数据管理";
+        leftTitle.className = "text-lg font-semibold";
+        topBar.appendChild(leftTitle);
+
+        // 右侧按钮组
+        const btnGroup = document.createElement("div");
+        btnGroup.className = "flex flex-wrap gap-2";
+
+        const exportBtn = document.createElement("button");
+        exportBtn.textContent = "导出Excel";
+        exportBtn.className = "bg-emerald-600 text-white px-3 py-1 rounded hover:bg-emerald-700";
+
+        const clearAllBtn = document.createElement("button");
+        clearAllBtn.textContent = "删除全部记录";
+        clearAllBtn.className = "bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700";
+
+        const close = document.createElement("button");
+        close.textContent = "关闭";
+        close.className = "bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600";
+        close.onclick = () => wrap.remove();
+
+        // 一键清空
+        clearAllBtn.addEventListener("click", () => {
+               if (!confirm("⚠️ 确认要删除所有报名记录吗？此操作不可恢复！")) return;
+      
+          const token = prompt('为防误操作，请输入“删除”以确认：');
+          if (token !== "删除") {
+            alert("已取消操作。");
+            return;
+          }
+      
+          signupsRef
+            .remove()
+            .then(() => {
+              alert("✅ 已清空所有记录。");
+              wrap?.remove?.();
+            })
+            .catch(err => alert("删除失败：" + err));
+        });
+
+        // 导出为 Excel 文件
+        exportBtn.addEventListener("click", () => {
+          const workbook = XLSX.utils.book_new();
+          const sheetData = [
+            ["中文名", "英文名", "电话", "班级", "日期", "分组", "分层", "教师", "第一节", "第二节", "备注", "时间"]
+          ];
+
+          entries.forEach(([_, r]) => {
+            sheetData.push([
+              r.studentNameCn || "",
+              r.studentNameEn || "",
+              r.phone || "",
+              r.classNumber || "",
+              r.date || "",
+              r.group || "",
+              r.track || "",
+              r.trackTeacher || "",
+              r.period1 || "",
+              r.period2 || "",
+              r.note || "",
+              new Date(r.timestamp).toLocaleString()
+            ]);
+          });
+
+          const worksheet = XLSX.utils.aoa_to_sheet(sheetData);
+          XLSX.utils.book_append_sheet(workbook, worksheet, "报名数据");
+          XLSX.writeFile(workbook, "六年级家长开放日报名.xlsx");
+        });
+
+        btnGroup.appendChild(exportBtn);
+        btnGroup.appendChild(clearAllBtn);
+        btnGroup.appendChild(close);
+        topBar.appendChild(btnGroup);
+        box.appendChild(topBar);
+
+        // 表格内容
+        const table = document.createElement("table");
+        table.className = "min-w-full border text-sm";
+        table.innerHTML = `
+          <thead>
+            <tr class='bg-gray-100'>
+              <th class='border p-1'>中文名</th>
+              <th class='border p-1'>英文名</th>
+              <th class='border p-1'>电话</th>
+              <th class='border p-1'>班级</th>
+              <th class='border p-1'>日期</th>
+              <th class='border p-1'>分组</th>
+              <th class='border p-1'>分层</th>
+              <th class='border p-1'>教师</th>
+              <th class='border p-1'>第一节</th>
+              <th class='border p-1'>第二节</th>
+              <th class='border p-1'>备注</th>
+              <th class='border p-1'>时间</th>
+              <th class='border p-1 text-center'>操作</th>
+            </tr>
+          </thead>
+          <tbody></tbody>`;
+        const tbody = table.querySelector("tbody");
+
+        entries.forEach(([key, r]) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td class='border p-1'>${r.studentNameCn || ""}</td>
+            <td class='border p-1'>${r.studentNameEn || ""}</td>
+            <td class='border p-1'>${r.phone || ""}</td>
+            <td class='border p-1'>${r.classNumber || ""}</td>
+            <td class='border p-1'>${r.date || ""}</td>
+            <td class='border p-1'>${r.group || ""}</td>
+            <td class='border p-1'>${r.track || ""}</td>
+            <td class='border p-1'>${r.trackTeacher || ""}</td>
+            <td class='border p-1'>${r.period1 || ""}</td>
+            <td class='border p-1'>${r.period2 || ""}</td>
+            <td class='border p-1'>${r.note || ""}</td>
+            <td class='border p-1 whitespace-nowrap'>${new Date(r.timestamp).toLocaleString()}</td>
+            <td class='border p-1 text-center'>
+              <button class='delete-btn bg-red-500 text-white px-2 py-0.5 rounded hover:bg-red-600 text-xs'>删除</button>
+            </td>`;
+
+          // 单条删除按钮
+          const delBtn = tr.querySelector(".delete-btn");
+          delBtn.addEventListener("click", () => {
+            if (confirm(`确认删除【${r.studentNameCn || ""}】的报名记录吗？`)) {
+              signupsRef.child(key).remove()
+                .then(() => {
+                  alert("✅ 已删除该条记录。");
+                  tr.remove();
+                })
+                .catch(err => alert("删除失败：" + err));
+            }
+          });
+
+          tbody.appendChild(tr);
+        });
+
+        box.appendChild(table);
+        wrap.appendChild(box);
+        document.body.appendChild(wrap);
+      });
+    }
   </script>
 </body>
 </html>
